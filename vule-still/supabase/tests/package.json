@@ -1,0 +1,11 @@
+{
+  "name": "vule-still-sql-verification",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node foundation.test.mjs"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.14"
+  }
+}
