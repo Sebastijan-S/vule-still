@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { CHALLENGE_COOKIE, getChallenge } from "@/lib/auth/session";
 import { ensureSessionAccess } from "@/lib/auth/activity";
+import { accountReturnTo } from "@/lib/auth/navigation";
 import { authErrorMessage, CHALLENGE_SECONDS, normalizeCode, normalizeEmail, profileComplete, readText, RESEND_SECONDS, safeReturnTo, type AuthState } from "@/lib/auth/validation";
 
 export async function authenticate(previous: AuthState, form: FormData): Promise<AuthState> {
@@ -47,11 +48,12 @@ export async function authenticate(previous: AuthState, form: FormData): Promise
   if (!await ensureSessionAccess()) return { ...pending, error: "Pristup nalogu nije uspostavljen. Zatraži novi kod." };
   // A verified session already exists. If the profile read fails, send the
   // customer to the protected profile page rather than showing a code error.
-  let destination = `/profil?next=${encodeURIComponent(next)}`;
+  const destinationNext = await accountReturnTo(next, userId);
+  let destination = new URL(destinationNext, "https://vule.invalid").pathname === "/raspored" ? destinationNext : `/profil?next=${encodeURIComponent(destinationNext)}`;
   try {
     const supabase = await createClient();
     const { data: profile, error } = await supabase.from("profiles").select("first_name,last_name,phone").eq("id", userId).maybeSingle();
-    if (!error && profileComplete(profile)) destination = next;
+    if (!error && profileComplete(profile)) destination = destinationNext;
   } catch { /* The protected profile page will surface a data error. */ }
   (await cookies()).delete(CHALLENGE_COOKIE);
   revalidatePath("/", "layout");

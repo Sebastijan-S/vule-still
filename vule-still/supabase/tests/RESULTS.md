@@ -11,6 +11,10 @@
 
 Istorijski zapis ispod ostaje evidencija početne faze; ne predstavlja aktuelni ukupan obim.
 
+### Ispravka registracije — 3. novembar 2026.
+
+Posle prijavljenog 404 nakon registracije dodate su dve stvarne browser regresije za korisničko preusmeravanje i novu registraciju bez mejla. **Svih 7 browser testova prolazi**, uključujući postojećeg vlasnika i kalendare na tri širine. Prolaze i build, lint i 5 lokalnih Auth provera. Običan nalog ide na profil/„Moji termini“; star ili ručno izmenjen povratak na `/raspored` ne daje vlasnički pristup. Nova registracija ostavlja jedan sintetički nalog u test projektu po pokretanju. Nema izmene SQL/RLS pravila ili dodele vlasničke uloge. Detalji su u najnovijem handoff-u.
+
 Datum: 31.10.2026.
 
 **Rezultat: PASS — 45 provera.**

@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { requireUser } from "@/lib/auth/session";
-import { profileComplete, safeReturnTo } from "@/lib/auth/validation";
+import { profileComplete } from "@/lib/auth/validation";
+import { accountReturnTo } from "@/lib/auth/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeading } from "@/components/site-shell";
 import { Icon } from "@/components/icon";
@@ -12,7 +13,7 @@ export const metadata: Metadata = { title: "Moj profil | Vule Still", robots: { 
 async function ProfileContent({ searchParams }: PageProps<"/profil">) {
   const user = await requireUser();
   const query = await searchParams;
-  const next = query.next ? safeReturnTo(query.next) : "/profil";
+  const next = query.next ? await accountReturnTo(query.next, user.id) : "/profil";
   const supabase = await createClient();
   const { data: profile, error } = await supabase.from("profiles").select("first_name,last_name,phone").eq("id", user.id).single();
   if (error || !profile) throw new Error("Profil trenutno nije dostupan.");

@@ -3,8 +3,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
-import { normalizePhone, readText, safeReturnTo, validName, type ProfileState } from "@/lib/auth/validation";
+import { normalizePhone, readText, validName, type ProfileState } from "@/lib/auth/validation";
 import { recordUserActivity } from "@/lib/auth/activity";
+import { accountReturnTo } from "@/lib/auth/navigation";
 
 export async function saveProfile(_previous: ProfileState, form: FormData): Promise<ProfileState> {
   const user = await requireUser();
@@ -22,6 +23,6 @@ export async function saveProfile(_previous: ProfileState, form: FormData): Prom
     if (error || !data) return { error: "Podaci nisu sačuvani. Pokušaj ponovo.", values };
   } catch { return { error: "Veza je prekinuta. Pokušaj ponovo da sačuvaš podatke.", values }; }
   revalidatePath("/", "layout");
-  const next = safeReturnTo(form.get("next"));
+  const next = await accountReturnTo(form.get("next"), user.id);
   redirect(next === "/profil" ? "/profil?sacuvano=1" : next);
 }

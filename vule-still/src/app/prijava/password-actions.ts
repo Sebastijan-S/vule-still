@@ -5,7 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getSupabaseEnvironment } from "@/lib/supabase/environment";
 import { passwordTestMode } from "@/lib/auth/mode";
 import { ensureSessionAccess } from "@/lib/auth/activity";
-import { normalizeEmail, profileComplete, readText, safeReturnTo } from "@/lib/auth/validation";
+import { normalizeEmail, profileComplete, readText } from "@/lib/auth/validation";
+import { accountReturnTo } from "@/lib/auth/navigation";
 
 export type PasswordState = { error?: string; message?: string; email?: string };
 
@@ -45,10 +46,10 @@ export async function authenticatePassword(_previous: PasswordState, form: FormD
     return { email, error: "Sesija nije uspostavljena. Proveri podešavanja test projekta." };
   }
   if (!await ensureSessionAccess()) return { email, error: "Pristup nalogu je istekao. Prijavi se ponovo." };
-  const next = safeReturnTo(form.get("next"));
+  const next = await accountReturnTo(form.get("next"), result.data.user.id);
   // Owner administration has its own membership gate and needs no customer
   // booking profile. Navigation to this route never grants owner permissions.
-  let destination = next === "/raspored" ? next : `/profil?next=${encodeURIComponent(next)}`;
+  let destination = new URL(next, "https://vule.invalid").pathname === "/raspored" ? next : `/profil?next=${encodeURIComponent(next)}`;
   const { data: profile, error } = await supabase.from("profiles").select("first_name,last_name,phone").eq("id", result.data.user.id).maybeSingle();
   if (!error && profileComplete(profile)) destination = next;
   revalidatePath("/", "layout");
