@@ -13,10 +13,22 @@ create table auth.users (
   raw_user_meta_data jsonb not null default '{}'::jsonb
 );
 
+create table auth.sessions (
+  id uuid primary key,
+  user_id uuid not null references auth.users (id) on delete cascade,
+  created_at timestamptz not null default statement_timestamp()
+);
+
 create function auth.uid()
 returns uuid language sql stable
 as $$
   select (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub')::uuid;
+$$;
+
+create function auth.jwt()
+returns jsonb language sql stable
+as $$
+  select nullif(current_setting('request.jwt.claims', true), '')::jsonb;
 $$;
 
 -- Simulate permissive table defaults to verify that the migration removes them.

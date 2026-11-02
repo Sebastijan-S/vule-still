@@ -68,7 +68,8 @@ try {
   ]);
 
   const migrationDir = new URL("../migrations/", import.meta.url);
-  const migrationNames = (await readdir(migrationDir)).filter((name) => name.endsWith(".sql")).sort();
+  // Foundation tests intentionally stop before later phase migrations.
+  const migrationNames = (await readdir(migrationDir)).filter((name) => name.endsWith(".sql") && name < "20261102").sort();
   for (const name of migrationNames) {
     await db.exec(await readFile(new URL(name, migrationDir), "utf8"));
   }

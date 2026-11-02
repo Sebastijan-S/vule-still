@@ -4,20 +4,28 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:test": "node scripts/test-environment.mjs dev",
+    "build:test": "node scripts/test-environment.mjs build",
+    "start:test": "node scripts/test-environment.mjs start",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test:auth": "node --experimental-strip-types --test --test-isolation=none tests/auth-validation.test.mjs",
+    "test:availability": "node --experimental-strip-types --test --test-isolation=none tests/availability.test.mjs",
+    "test:browser": "node --env-file=.env.test.local node_modules/@playwright/test/cli.js test",
     "check:supabase": "node --env-file=.env.local scripts/check-supabase.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.118.0",
+    "libphonenumber-js": "1.13.15",
     "next": "16.4.3",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "server-only": "0.0.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

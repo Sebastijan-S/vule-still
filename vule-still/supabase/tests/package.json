@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node foundation.test.mjs"
+    "test": "node foundation.test.mjs && node account-activity.test.mjs && node schedule.test.mjs && node availability.test.mjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.14"

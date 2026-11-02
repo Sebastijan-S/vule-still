@@ -163,7 +163,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      ensure_session_access: { Args: Record<string, never>; Returns: boolean }
+      record_user_activity: { Args: Record<string, never>; Returns: boolean }
+      get_owner_schedule: { Args: { p_week: string }; Returns: Json | null }
+      prepare_schedule_week: { Args: { p_week: string }; Returns: Json }
+      save_schedule_draft: { Args: { p_week: string; p_expected_revision: number; p_entries: Json; p_gap: number }; Returns: number }
+      publish_schedule_week: { Args: { p_week: string; p_expected_revision: number }; Returns: number }
+      published_schedule: { Args: { p_week: string }; Returns: Json | null }
+      availability_context: { Args: { p_date: string; p_location: string; p_service: string }; Returns: Json }
     }
     Enums: {
       [_ in never]: never
