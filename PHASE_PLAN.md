@@ -91,14 +91,14 @@ Git checkpoints restore code. Database changes and external settings need their 
 
 Status values: **Not started**, **In progress**, **Ready for review**, **Completed / Accepted**, **Blocked**. Completion refers to the current agreed phase scope. Deferred release checks must remain explicit. User acceptance of earlier work is recorded; phase 6's new interface still has its manual review checklist.
 
-| Chat phase | Original website stage | Scope | Status | Accepted checkpoint |
+| Chat phase | Original website stage | Scope | Status | Source checkpoint |
 | --- | --- | --- | --- | --- |
-| 1 | 1 — Authentication | Login, registration, logout and profile | Completed / Accepted; temporary password mode | — |
-| 2 | 2 — Auth readiness, part A | Isolated test environment and no-email password Auth | Completed; real email confirmation moved to phase 12 | — |
-| 3 | 2 — Auth readiness, part B | Account inactivity, access and test-owner provisioning | Completed / Accepted for test scope; real owner verification in phase 12 | — |
-| 4 | 3 — Public website | Complete public design and content | Completed / Accepted; final real contacts in phase 12 | — |
-| 5 | 4 — Scheduling | Published schedules and two location calendars | Completed on test project; manual calendar review at handoff | — |
-| 6 | 5 — Booking engine, part A | Availability and time rules | Completed; advisory API, reservation writes remain closed | — |
+| 1 | 1 — Authentication | Login, registration, logout and profile | Completed / Accepted; temporary password mode | checkpoint/06-availability |
+| 2 | 2 — Auth readiness, part A | Isolated test environment and no-email password Auth | Completed; real email confirmation moved to phase 12 | checkpoint/06-availability |
+| 3 | 2 — Auth readiness, part B | Account inactivity, access and test-owner provisioning | Completed / Accepted for test scope; real owner verification in phase 12 | checkpoint/06-availability |
+| 4 | 3 — Public website | Complete public design and content | Completed / Accepted; final real contacts in phase 12 | checkpoint/06-availability |
+| 5 | 4 — Scheduling | Published schedules and two location calendars | Completed on test project; manual calendar review at handoff | checkpoint/06-availability |
+| 6 | 5 — Booking engine, part A | Availability and time rules | Completed; advisory API, reservation writes remain closed | checkpoint/06-availability |
 | 7 | 5 — Booking engine, part B | Atomic reservations, permissions and concurrency | Not started | — |
 | 8 | 6 — Booking interface | Customer booking journey | Not started | — |
 | 9 | 7 — Customer account | My appointments, cancellation and notifications | Not started | — |
@@ -512,7 +512,14 @@ Exact next-chat prompt:
 - **Owner login navigation:** The safe return allowlist includes `/raspored`; password login can return there without requiring a customer booking profile. The server route and database RPCs still enforce owner membership. Ordinary customer/anonymous denial passed separately; a return URL is never an authorization grant.
 - **Test data:** The original saved draft was preserved and the test week starting 2 November was published. Live scripts use existing clearly synthetic accounts in ignored `.env.phase6-state.local`; no test password, session or privileged key is committed. Browser tests temporarily change one shift, save/publish it and restore the original. Occupied-interval and DST failure fixtures remain isolated SQL/pure tests; no real customer booking was created.
 - **Preview and repeatable commands:** From the application folder use `npm.cmd run dev:test`, or `npm.cmd run build:test` followed by `npm.cmd run start:test`, then `http://127.0.0.1:3100/raspored`. The guarded runner loads `.env.test.local` and refuses another project. Do not run two servers on port 3100. Browser tests target a stable completed build; building while a dev server watches generated build/type files caused repeated reloads, so avoid that combination for UI verification.
-- **Git backup/recovery:** The user explicitly authorized committing and pushing all intended work to `Sebastijan-S/vule-still` for recovery. Keep the current branch `phase/01-auth` rather than moving away from the accumulated changes. `main` remains the original accepted foundation; no website deployment is implied. The actual checkpoint commit/tag and push result are recorded below after creation. Git restores code only; cloud data, Auth settings and migrations require separate recovery/export. Prefer additive compatibility and never reset/drop the live database as part of a code rollback.
+- **Git backup/recovery:** The user explicitly authorized committing and pushing all intended work to `Sebastijan-S/vule-still` for recovery. Keep the current branch `phase/01-auth` rather than moving away from the accumulated changes. `main` remains the original accepted foundation; no website deployment is implied. The actual created checkpoint is recorded below. Git restores code only; cloud data, Auth settings and migrations require separate recovery/export. Prefer additive compatibility and never reset/drop the live database as part of a code rollback.
 - **User checklist before phase 7:** Open both calendars on phone/desktop; edit a shift, add a break and cancel the dialog; save a harmless test change and confirm that the published view remains unchanged until explicit publication. Restore the desired test schedule. Check both locations and the current/next week selector. No domain purchase, SMTP setup or email verification is needed now. New accounts are ordinary customers; owner membership is assigned separately and is never self-service.
 - **Next phase:** Phase 7, atomic reservation/cancellation operations, idempotency, ownership/guest schema and real concurrent booking checks. Before enabling writes, integrate the same week locking and exact affected-booking confirmation into schedule publication. Do not assume the phase 6 availability response reserves a slot. Later customer/owner screens remain phases 8–11.
 - **Exact next-chat prompt:** `Read PHASE_PLAN.md and its latest handoff. Start phase 7 on Vule-still-test: implement atomic reservations, access protection, idempotency and concurrent booking checks; integrate safe schedule publication before enabling booking writes. Keep password authentication without email confirmation for now; domain, SMTP, real owner verification and final email + password confirmation belong to phase 12. Work only on phase 7 and finish with tests and a handoff.`
+
+### Created recovery checkpoint — 3 November 2026
+
+- Code and test handoff commit: `3faf5fe84486ec26f261d37786d634e050cf42ba` — `feat: preserve location calendars and availability checkpoint`.
+- Annotated tag: `checkpoint/06-availability`, created and verified locally at that commit. This shared checkpoint includes all implemented phases 1–6; no separate per-phase history is invented.
+- Branch: `phase/01-auth`. The following documentation commit records this already-created tag without rewriting the code checkpoint. Publication of the branch and tag is explicitly authorized; verify remote refs when restoring or beginning a fresh clone.
+- GitHub destination: [Vule Still](https://github.com/Sebastijan-S/vule-still). The tag restores application sources, assets, migrations and tests. Keep ignored test environment/fixture credentials locally; Git does not restore Supabase data or external settings. Production `main` and production database have not been promoted by this checkpoint.
