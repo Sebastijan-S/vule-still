@@ -30,17 +30,18 @@ try {
   });
   for (const role of ["anon", "authenticated"]) {
     await db.exec(`reset role; set role ${role}`);
-    await check(`${role} cannot read or insert private reservation rows`, async () => {
-      await assert.rejects(db.query("select * from public.reservations"));
+    await check(`${role} cannot access foreign reservation rows or insert directly`, async () => {
+      if (role === "anon") await assert.rejects(db.query("select * from public.reservations"));
+      else assert.equal((await db.query("select * from public.reservations")).rows.length,0);
       await assert.rejects(db.query("insert into public.reservations default values"));
     });
   }
   await db.exec("reset role");
   const staff = (await db.query("select id from public.staff limit 1")).rows[0].id;
-  await db.query("insert into public.reservations(staff_id,location_id,starts_at,ends_at,status) values ($1,$2,$3::date+interval '10 hours',$3::date+interval '11 hours','confirmed'),($1,$2,$3::date+interval '12 hours',$3::date+interval '13 hours','cancelled')", [staff, location, today]);
+  await db.query("insert into public.reservations(staff_id,location_id,starts_at,ends_at,status,guest_name,attendee_name,service_id,service_name,duration_minutes,cancelled_at,cancellation_reason) values ($1,$2,$3::date+interval '10 hours',$3::date+interval '11 hours','confirmed','Fixture','Fixture',$4,'Fixture',60,null,null),($1,$2,$3::date+interval '12 hours',$3::date+interval '13 hours','cancelled','Fixture','Fixture',$4,'Fixture',60,now(),'Fixture cancelled')", [staff, location, today, service]);
   await db.exec("set role anon");
   await check("public context exposes confirmed occupancy without row ids or customer data", async () => {
     const result = await rpc(); assert.equal(result.occupied.length, 1);
-    assert.deepEqual(Object.keys(result.occupied[0]).sort(), ["end", "location_id", "start"]);
+    assert.deepEqual(Object.keys(result.occupied[0]).sort(), ["end", "location_id", "start", "travel_gap_minutes"]);
   });
 } finally { await db.close(); }

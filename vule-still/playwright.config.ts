@@ -6,5 +6,5 @@ export default defineConfig({
   retries: 0,
   timeout: 60000,
   reporter: "list",
-  use: { baseURL: "http://127.0.0.1:3100", trace: "off", screenshot: "off" },
+  use: { channel: "chrome", baseURL: "http://127.0.0.1:3100", trace: "off", screenshot: "off" },
 });

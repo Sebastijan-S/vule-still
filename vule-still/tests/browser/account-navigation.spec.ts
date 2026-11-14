@@ -16,7 +16,7 @@ test("customer sign-in and old profile return never redirect into owner administ
   await page.waitForURL(path => ["/profil", "/moji-termini"].includes(path.pathname));
   expect(new URL(page.url()).searchParams.get("next") ?? "").not.toContain("/raspored");
   await page.goto("/profil?next=%2Fraspored");
-  await expect(page.locator('input[name="next"]')).toHaveValue("/moji-termini");
+  await expect(page.locator('main input[name="next"]')).toHaveValue("/moji-termini");
   await page.goto("/prijava?next=%2Fraspored");
   await page.waitForURL(path => path.pathname === "/moji-termini");
   await page.goto("/raspored");
@@ -42,7 +42,7 @@ test("new no-email registration from schedule request completes the customer jou
   await page.getByLabel("Broj telefona", { exact: true }).fill("+381641234567");
   await page.getByRole("button", { name: "Sačuvaj podatke", exact: true }).click();
   await page.waitForURL(path => path.pathname === "/moji-termini");
-  await expect(page.getByRole("heading", { name: "Tvoj nalog je spreman.", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Budući termini", exact: true })).toBeVisible();
   await page.goto("/raspored");
   await expect(page.getByRole("heading", { name: "Raspored je dostupan samo vlasniku.", exact: true })).toBeVisible();
   await expect(page.locator(".location-calendar")).toHaveCount(0);

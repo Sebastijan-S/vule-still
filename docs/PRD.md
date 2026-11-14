@@ -4,6 +4,20 @@ Verzija 1.0 • 31.10.2026. • Specifikacija za pregled pre izrade.
 
 Izvor zahteva: opis nove aplikacije, četiri dostavljena screenshota i odgovori 1–43 iz [registra odluka](ODLUKE.md). Oznake P1–P13 u registru predstavljaju predložena tumačenja detalja.
 
+## Važeći obim skraćene prve verzije — 3.11.2026.
+
+Ova dopuna i [najnovije odluke MVP01–MVP08](ODLUKE.md) imaju prednost nad izvornim punim obimom ispod. Redosled/stanje vodi [plan faza](../PHASE_PLAN.md).
+
+- Cilj je proveren testni sajt u 2–3 radna dana od nastavka, uz pouzdan pristup servisima. Faze 1–6 su završene za testni obim; stvarna konkurentnost faze 7 i korisnički/vlasnički tokovi faza 8–10 provereni su na Vule-still-test. Korisnički pregled/prihvatanje ostaju odvojeni od automatizovanih rezultata u planu faza.
+- Faze 8 i 9 čine jednu isporuku: zakazivanje, Moji termini, redovno otkazivanje i jednostavna trajna obaveštenja. Faza 10 je jednostavna funkcionalna vlasnička stranica sa pregledom, ručnim unosom, bezbednim izmenama i redovnim otkazivanjem, uz postojeća dva kalendara. Ne traži se dodatno estetsko doterivanje.
+- **Faza 11 nije u prvoj verziji:** blokiranje/odblokiranje, uređivač usluga, vanredna otkazivanja unutar 30 minuta, grupne promene i audit pregled odlažu se. Poglavlja ispod koja ih opisuju ostaju buduća specifikacija. Interni audit, snimci usluge/trajanja, privatnost i integritet ostaju obavezni.
+- Konfliktna objava rasporeda se odbija uz jasnu poruku, bez izmene objavljenog rasporeda ili otkazivanja. Vlasnik pojedinačno rešava rezervacije dozvoljenim radnjama, pa ponavlja objavu. Nema skrivenog izuzetka za kasno otkazivanje.
+- Jedan frizer/dve lokacije, katalog, puna usluga unutar slobodnog perioda i granice 15/30 minuta i 14 dana ostaju. Jednostavnija administracija zadržava mobilnu/tastaturnu upotrebljivost i proveru pristupa.
+- Razvoj koristi imejl + lozinku bez potvrde na Vule-still-test. Potvrda/oporavak, domen/SMTP, stvarni vlasnik i konačni URL-ovi čekaju završnu aktivaciju. Stariji imejl + kod opisi nisu aktivni tok. Produkciona šema, kontakti, hosting/HTTPS i stvarne provere takođe ostaju za kraj; promena URL-a/ključa sama nije završetak. Sintetičke naloge/rezervacije ne prenositi.
+- Najnovija granica korisnika: **telefon + lozinka** je zaseban završni blok pre produkcije. Sada ne menjati Auth. Konačna pravila identiteta/oporavka i vlasničke verifikacije razrađuju se u tom bloku; stariji opisi konačne imejl prijave nemaju prednost nad ovom odlukom.
+
+**Kriterijumi ove isporuke:** A12 i A15 označiti kao odložene, ne kao prolaz. A13 proverava odbijanje konfliktne objave bez automatskog otkazivanja. A14 očuvanje naziva/trajanja ostaje obavezno i bez uređivača usluga. Mejl/verifikacioni delovi A01/A02/A17 čekaju finalnu aktivaciju na konačnom toku. Ostali važeći kriterijumi ostaju obavezni. Stvarni rezultati vode se u planu faza; ovom dokumentacionom izmenom nijedan novi test nije označen kao prošao.
+
 ## 1. Cilj i korisnici
 
 Napraviti modernu web aplikaciju u kojoj klijent sam rezerviše slobodan termin, a vlasnik upravlja rasporedom jednog frizera na dve lokacije. Očekivano korišćenje je 11–20 rezervacija dnevno ukupno. Aplikacija je na srpskom, latinicom, prvenstveno prilagođena telefonu.
@@ -111,6 +125,8 @@ Potvrda, izmena i otkazivanje stvaraju trajno obaveštenje u aplikaciji. Prikazu
 
 ## 9. Administracija
 
+Razjašnjenje od 3.11.2026: zaseban direktan ulaz je `/administrator`, na istom domenu, bez veze iz javnog menija. Posle vlasničke prijave otvara se administracija sa sopstvenim zaglavljem i navigacijom; javne sekcije se tu ne prikazuju. Link ne predstavlja zaštitu ili dodelu uloge. Uobičajena nedelja ima poseban urednik: menja se samo podrazumevani raspored za nove nedelje, bez prepisivanja već pripremljenih nacrta i objavljenih snimaka. Konkretni kalendari podržavaju rad i nedeljom. Radno vreme mora se jasno razlikovati od rezervacije klijenta. Zaseban interfejs i korisničko prihvatanje proveravaju se odvojeno od ranijih poslovnih operacija.
+
 Pristup ima samo eksplicitno dodeljen vlasnički nalog. Korisnik ne može da dodeli sebi ovu ulogu uređivanjem profila ili zahteva.
 
 Vlasnik vidi raspored i detalje rezervacija, dodaje ručni termin uz samo ime klijenta i po želji kontakt. Ručni termin zauzima isti resurs i prolazi iste provere dostupnosti. Kada nema nalog/kontakt, obaveštenje klijentu u aplikaciji nije moguće; to mora biti jasno u admin prikazu.
@@ -160,4 +176,4 @@ Potrebni su odvojeni podaci za razvoj/proveru i javni rad, kontrolisano čuvanje
 | A19 | Prikaz i pravila vremena rade tokom zimskog/letnjeg vremena i na uređaju u drugoj zoni. |
 | A20 | Mobilni tok, povratak po koracima, učitavanje, prazan rezultat i greške rade na dogovorenim širinama. |
 
-Status provera: kriterijumi aplikacije su planirani; postoje Next.js temelj i početni SQL paket, ali poslovni tokovi još nisu implementirani. Izolovane SQL provere dokumentuju se u `vule-still/supabase/`; one nisu potvrda prolaza kompletnog kriterijuma A01–A20 na stvarnom Supabase okruženju.
+Aktuelni status i rezultati su u [planu faza](../PHASE_PLAN.md) i [SQL rezultatima](../vule-still/supabase/tests/RESULTS.md). Tabela iznad čuva izvorne kriterijume uz obavezne izmene obima iz dopune od 3.11.2026. Izolovane SQL provere nisu dokaz kompletnog korisničkog toka ili stvarne konkurentnosti na Supabase-u.

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node scripts/test-environment.mjs dev 3000",
     "dev:test": "node scripts/test-environment.mjs dev",
     "build:test": "node scripts/test-environment.mjs build",
     "start:test": "node scripts/test-environment.mjs start",
@@ -12,6 +12,7 @@
     "lint": "eslint",
     "test:auth": "node --experimental-strip-types --test --test-isolation=none tests/auth-validation.test.mjs",
     "test:availability": "node --experimental-strip-types --test --test-isolation=none tests/availability.test.mjs",
+    "test:booking": "node --experimental-strip-types --test --test-isolation=none tests/booking.test.mjs",
     "test:browser": "node --env-file=.env.test.local node_modules/@playwright/test/cli.js test",
     "check:supabase": "node --env-file=.env.local scripts/check-supabase.mjs"
   },

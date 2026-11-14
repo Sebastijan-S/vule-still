@@ -4,7 +4,29 @@ Verzija 1.0 • 31.10.2026. • Predlog obima rada i tehničke realizacije za pr
 
 Ovaj dokument definiše isporuke za [PRD](PRD.md), prema [43 odgovora](ODLUKE.md). Poslovna pravila su usaglašena; hosting provajder i detalji tehničke izvedbe predstavljaju predlog. Nisu ugovoreni novčana naknada za izradu, kalendarski rok ili održavanje nakon isporuke.
 
+## Aktuelni plan isporuke — dopuna 3.11.2026.
+
+Cilj je proveren skraćeni testni sajt u **2–3 radna dana od nastavka**, uz pouzdan pristup servisima i kritične provere; nije garantovan datum. Ova dopuna i [najnovije odluke](ODLUKE.md) imaju prednost nad izvornim obimom F0–F7 i starijim OTP/SMTP zavisnostima ispod. Brojevi faza 7–12 odnose se na [aktuelni plan](../PHASE_PLAN.md).
+
+| Blok | Isporuka | Uslov završetka |
+| --- | --- | --- |
+| A — faza 7 | Završiti testnu bazu, potvrdu/otkazivanje i zaštitu objave rasporeda | Stvarni paralelni zahtevi, prava, ponavljanje i celovitost promena provereni; relevantne regresije/build prolaze |
+| B — faze 8 + 9 | Zakazivanje, Moji termini, redovno otkazivanje i obaveštenja zajedno | Kompletan tok na telefonu/računaru, bez duplikata i pristupa tuđim podacima |
+| C — jednostavna faza 10 | Vlasnički pregled/filter/detalji, ručni unos, sigurna izmena, redovno otkazivanje i postojeći kalendari | Laka dnevna upotreba, zaštićen pristup i odbijanje konfliktne objave |
+| D — testni kandidat | Zajednička provera B/C, popravke i kratko uputstvo | Smanjeni testni sajt završen; ostale aktivacione stavke pojedinačno navedene |
+| E — završna aktivacija | Produkciona šema/podešavanja, stvarni vlasnik, domen/SMTP/potvrda i oporavak mejla, kontakti, hosting/HTTPS | Podaci/ovlašćenje dostupni, produkcioni tokovi provereni, sintetički korisnici/rezervacije nisu kopirani |
+
+Predlog: prvi radni dan A i početak B, drugi B/C, treći integracija/popravke D. Blok E može sačekati domen i podatke. Spajanje ne preskače zavisnosti i provere integriteta.
+
+**Faza 11 je van ove isporuke:** blokiranje/odblokiranje, uređivač usluga, vanredna kasna otkazivanja, grupne promene i audit pregled. Raniji opisi ostaju budući obim; interni audit/obaveštenja, privatnost i snimci ostaju. Konfliktna objava rasporeda se odbija bez automatskog otkazivanja. Administracija sme biti obična funkcionalna stranica postojećeg stila; estetsko doterivanje nije cilj, jasne radnje i mobilna upotreba jesu.
+
+Razvojna prijava je imejl + lozinka bez potvrde na Vule-still-test. Potvrda/oporavak i produkcioni vlasnik čekaju E. Pre javnog rada dokumentovati dogovoreno rešavanje hitnih slučajeva van skraćenog interfejsa, bez zaobilaženja pravila. Kriterijumi prate [dopunu PRD-a](PRD.md): A12/A15 odloženi, A13 odbijanje konfliktne objave, A14 i dalje obavezan; mejl delovi A01/A02/A17 finalna aktivacija. Odloženo nije isto što i prošlo proveru.
+
+Najnovija granica zadatka: prijava **telefonom i lozinkom** radiće se u zasebnom završnom bloku pre produkcije, uz posebno definisan/proveren identitet i oporavak. Sada ostaje postojeći testni Auth; ovo nije nalog za izmenu prijave ili za produkcionu aktivaciju.
+
 ## 1. Isporuke
+
+Razjašnjenje faze 10 od 3.11.2026: blok C uključuje zaseban ulaz `/administrator`, sopstveno vlasničko zaglavlje/navigaciju bez javnog menija, postojeće operacije rezervacija i dva radna kalendara, uz jasan urednik uobičajene nedelje. Šablon utiče samo na prvi nastanak novih nacrta. Konkretnim smenama mora se moći otvoriti i nedelja; dodavanje rada je odvojeno od unosa klijentove rezervacije. Ranija provera operacija nije korisničko prihvatanje tog interfejsa.
 
 1. Novi, samostalan Next.js + TypeScript projekat sa jasnim uputstvom za pokretanje.
 2. Supabase SQL migracije, početni podaci, pravila pristupa i transakcije za rezervacije/raspored.
@@ -105,7 +127,7 @@ Model rasporeda i minimalne serverske funkcije pripremaju se u F1/F4; interfejs 
 
 Predložena nova struktura je `vule-still/` pored `docs/`, `outputs/` i `work/`. Stari arhivski paketi, runtime alati i privremene skripte ne ulaze u novi repozitorijum. Tačne komande pokretanja i testiranja dokumentuju se nakon izbora verzija.
 
-Rok se određuje nakon povezivanja naloga i dogovora o datumu isporuke; trenutno nema potvrđenog datuma. Provere SMTP domena i pristup servisima predstavljaju spoljne zavisnosti, a ne završene aktivnosti.
+Aktuelni cilj i blokovi dati su u dopuni od 3.11.2026. Nema garantovanog datuma završetka. Pristup test projektu ostaje zavisnost; domen/SMTP ne blokiraju testni sajt i čekaju završnu aktivaciju.
 
 ## 7. Plan provere
 
@@ -153,7 +175,7 @@ Pred javno korišćenje vlasnik mora da ima stvaran način kontakta i operativni
 
 ## 10. Predaja i promene obima
 
-Završena prva verzija znači da su isporučeni kod, migracije, konfiguracioni primeri bez tajni, uputstva i rezultati provera A01–A20. Ne smeju ostati poznati kvarovi koji dozvoljavaju duplu rezervaciju, pristup tuđim podacima ili neovlašćenu administraciju.
+Završena skraćena verzija znači isporučene kod, migracije, konfiguracione primere bez tajni, uputstva i rezultate važećih kriterijuma uz odlaganja i izmenjeni A13 iz dopune od 3.11.2026. Testni kandidat i javna aktivacija vode se odvojeno. Ne smeju ostati kvarovi koji dozvoljavaju duplu rezervaciju, pristup tuđim podacima ili neovlašćenu administraciju.
 
 Dodavanje više frizera, kombinovanih usluga, naplate, SMS/push poruka, podsetnika, korisničkog pomeranja, automatskog povezivanja ručnih gostiju ili migracije podataka smatra se promenom obima i prvo se upisuje u PRD/SoW sa uticajem na realizaciju i troškove.
 

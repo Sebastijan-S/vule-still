@@ -20,7 +20,7 @@ export function safeReturnTo(value: unknown): string {
   try {
     const url = new URL(value, "https://vule.invalid");
     if (!value.startsWith("/") || value.startsWith("//") || url.origin !== "https://vule.invalid") return "/moji-termini";
-    if (!["/", "/moji-termini", "/profil", "/rezervacija", "/raspored"].includes(url.pathname)) return "/moji-termini";
+    if (!["/", "/moji-termini", "/profil", "/rezervacija", "/raspored", "/administracija", "/administrator/sablon"].includes(url.pathname)) return "/moji-termini";
     return url.pathname + url.search + url.hash;
   } catch { return "/moji-termini"; }
 }

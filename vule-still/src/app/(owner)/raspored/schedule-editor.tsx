@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
 
 type Break = { start_minute: number; end_minute: number };
-type Shift = { date: string; location_id: string; start_minute: number; end_minute: number; breaks: Break[] };
+export type Shift = { date: string; location_id: string; start_minute: number; end_minute: number; breaks: Break[] };
 type Week = { draft: Shift[]; draft_revision: number; published: Shift[] | null; published_revision: number; travel_gap_minutes: number; published_gap_minutes: number | null };
 type Location = { id: string; name: string };
 type Editing = { index: number | null; shift: Shift };
@@ -26,8 +27,8 @@ function parseWeek(value: unknown): Week | null {
   return w as Week;
 }
 
-function ShiftDialog({ editing, location, onApply, onRemove, onClose }: {
-  editing: Editing; location: string; onApply: (shift: Shift) => void; onRemove: () => void; onClose: () => void;
+export function ShiftDialog({ editing, location, dayLabel, onApply, onRemove, onClose }: {
+  editing: Editing; location: string; dayLabel?: string; onApply: (shift: Shift) => void; onRemove: () => void; onClose: () => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [shift, setShift] = useState(() => structuredClone(editing.shift));
@@ -52,7 +53,7 @@ function ShiftDialog({ editing, location, onApply, onRemove, onClose }: {
   }
   return <dialog ref={dialog} className="shift-dialog" aria-labelledby="shift-title" onCancel={event => { event.preventDefault(); close(); }} onClose={onClose}>
     <form onSubmit={apply}>
-      <div className="shift-dialog-heading"><div><p className="eyebrow">{location}</p><h2 id="shift-title">{editing.index === null ? "Nova smena" : "Izmeni smenu"}</h2><p className="muted">{dateLabel(shift.date)}</p></div><button type="button" className="calendar-icon-button" aria-label="Zatvori izmenu smene" onClick={close}>×</button></div>
+      <div className="shift-dialog-heading"><div><p className="eyebrow">{location}</p><h2 id="shift-title">{editing.index === null ? "Nova smena" : "Izmeni smenu"}</h2><p className="muted">{dayLabel ?? dateLabel(shift.date)}</p></div><button type="button" className="calendar-icon-button" aria-label="Zatvori izmenu smene" onClick={close}>×</button></div>
       <div className="shift-time-fields"><label>Početak smene<input type="time" required value={toTime(shift.start_minute)} onChange={e => setShift({ ...shift, start_minute: fromTime(e.target.value) })} /></label><label>Kraj smene<input type="time" required value={toTime(shift.end_minute % 1440)} onChange={e => setShift({ ...shift, end_minute: fromTime(e.target.value) || 1440 })} /></label></div>
       <p className="field-help">Kraj u 00:00 označava ponoć na kraju izabranog dana.</p>
       <div className="shift-break-heading"><h3>Pauze</h3><button type="button" className="text-button" disabled={shift.breaks.length >= 12} onClick={() => setShift({ ...shift, breaks: [...shift.breaks, { start_minute: shift.start_minute + 60, end_minute: shift.start_minute + 80 }] })}>+ Dodaj pauzu</button></div>
@@ -123,7 +124,16 @@ export function ScheduleEditor({ locations }: { locations: Location[] }) {
       if (requestError) throw requestError;
       setWeek({ ...week, published: structuredClone(week.draft), published_revision: data, published_gap_minutes: gap });
       setMessage("Raspored je objavljen za obe lokacije.");
-    } catch { setError("Objava nije potvrđena. Osveži raspored da proveriš objavljenu verziju pre ponovnog pokušaja."); } finally { setBusy(false); }
+    } catch (cause) {
+      const code = cause && typeof cause === "object" && "message" in cause ? cause.message : "";
+      setError(code === "SCHEDULE_RESERVATION_CONFLICT" || code === "STARTED_RESERVATION"
+        ? "Raspored nije objavljen jer bi ugrozio postojeće rezervacije. Nijedan termin nije otkazan. Prvo pojedinačno reši termine dozvoljenim radnjama, pa ponovi objavu."
+        : code === "SCHEDULE_TRAVEL_CONFLICT"
+          ? "Raspored nije objavljen: smene se preklapaju ili nema dovoljno vremena za prelazak između lokacija, uključujući susedne nedelje."
+          : code === "SCHEDULE_CHANGED"
+            ? "Raspored je u međuvremenu promenjen. Osveži stranicu pre ponovne objave."
+            : "Objava nije potvrđena. Osveži raspored da proveriš objavljenu verziju pre ponovnog pokušaja.");
+    } finally { setBusy(false); }
   }
   function addShift(date: string, location: Location) {
     const start = location.name === "Neuzin" ? 1020 : 600;
@@ -136,6 +146,8 @@ export function ScheduleEditor({ locations }: { locations: Location[] }) {
   const range = (endHour - startHour) * 60;
   return <>
     <p className="eyebrow">ADMINISTRACIJA · RASPORED RADA</p><h1>Dve lokacije.<br /><em>Jedan raspored.</em></h1><p className="muted">Pripremi smene u kalendaru svake lokacije. Termini se otvaraju tek kada objaviš nedelju.</p>
+    <p className="field-help">Ovde dodaješ radno vreme, ne rezervaciju klijenta. Za rad nedeljom dodaj smenu dugmetom + u koloni Ned. Dan bez smene je neradan; za potpuno neradan dan ukloni sve njegove smene na obe lokacije.</p>
+    <p><Link className="outline-link" href="/administrator/sablon">Izmeni uobičajenu nedelju za buduće nacrte</Link></p>
     <div className="schedule-toolbar"><div className="schedule-week-nav"><button type="button" className="calendar-icon-button" aria-label="Prethodna nedelja" disabled={busy || loading} onClick={() => changeWeek(addDays(monday, -7))}>←</button><label className="schedule-date-label"><span>{dateLabel(monday)} — {dateLabel(addDays(monday, 6))}</span><input aria-label="Izaberi nedelju" type="date" value={monday} disabled={busy || loading} onChange={e => changeWeek(e.target.value)} /></label><button type="button" className="calendar-icon-button" aria-label="Sledeća nedelja" disabled={busy || loading} onClick={() => changeWeek(addDays(monday, 7))}>→</button></div><button type="button" className="text-button" disabled={busy || loading} onClick={() => changeWeek(localDate())}>Ova nedelja</button></div>
     {error && <div className="form-error" role="alert">{error}{!week && <button className="text-button" type="button" onClick={() => { setLoading(true); setError(""); setReload(n => n + 1); }}>Pokušaj ponovo</button>}</div>}{message && <p className="form-success" role="status">{message}</p>}
     {loading ? <p className="page-loading" role="status">Učitavamo kalendare…</p> : !week ? !error && <div className="empty-state"><h2>Nedelja još nije pripremljena.</h2><p>Pripremi kalendare za Zrenjanin i Neuzin iz početnog šablona. Nedelja ostaje zatvorena dok je ne objaviš.</p><button className="button" disabled={busy} onClick={prepare}>Pripremi nedelju</button></div> : <>

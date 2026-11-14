@@ -7,6 +7,7 @@ import { passwordTestMode } from "@/lib/auth/mode";
 import { ensureSessionAccess } from "@/lib/auth/activity";
 import { normalizeEmail, profileComplete, readText } from "@/lib/auth/validation";
 import { accountReturnTo } from "@/lib/auth/navigation";
+import { isOwnerDestination } from "@/lib/auth/owner-paths";
 
 export type PasswordState = { error?: string; message?: string; email?: string };
 
@@ -15,6 +16,8 @@ export async function authenticatePassword(_previous: PasswordState, form: FormD
   const email = normalizeEmail(readText(form.get("email")));
   const password = form.get("password");
   const intent = readText(form.get("intent"));
+  const ownerEntry = form.get("owner_entry") === "1";
+  if (ownerEntry && intent !== "signin") return { error: "Vlasnički pristup se dodeljuje zasebno. Prijavi se postojećim nalogom." };
   if (!email) return { error: "Unesi ispravnu imejl adresu." };
   if (typeof password !== "string" || password.length < 12 || password.length > 128) {
     return { email, error: "Lozinka mora imati najmanje 12 znakova." };
@@ -47,9 +50,13 @@ export async function authenticatePassword(_previous: PasswordState, form: FormD
   }
   if (!await ensureSessionAccess()) return { email, error: "Pristup nalogu je istekao. Prijavi se ponovo." };
   const next = await accountReturnTo(form.get("next"), result.data.user.id);
+  if (ownerEntry && !isOwnerDestination(next)) {
+    revalidatePath("/", "layout");
+    redirect("/administrator");
+  }
   // Owner administration has its own membership gate and needs no customer
   // booking profile. Navigation to this route never grants owner permissions.
-  let destination = new URL(next, "https://vule.invalid").pathname === "/raspored" ? next : `/profil?next=${encodeURIComponent(next)}`;
+  let destination = isOwnerDestination(next) ? next : `/profil?next=${encodeURIComponent(next)}`;
   const { data: profile, error } = await supabase.from("profiles").select("first_name,last_name,phone").eq("id", result.data.user.id).maybeSingle();
   if (!error && profileComplete(profile)) destination = next;
   revalidatePath("/", "layout");

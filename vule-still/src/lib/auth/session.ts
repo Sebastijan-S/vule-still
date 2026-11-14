@@ -6,6 +6,7 @@ import { connection } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { parseChallenge, safeReturnTo } from "./validation";
 import { ensureSessionAccess } from "./activity";
+import { isOwnerDestination } from "./owner-paths";
 
 export const CHALLENGE_COOKIE = "vule-auth-challenge";
 export async function getChallenge() {
@@ -24,6 +25,6 @@ export const getCurrentUser = cache(async () => {
 });
 export async function requireUser(next = "/profil") {
   const user = await getCurrentUser();
-  if (!user) redirect(`/prijava?next=${encodeURIComponent(safeReturnTo(next))}`);
+  if (!user) redirect(`${isOwnerDestination(next) ? "/administrator" : "/prijava"}?next=${encodeURIComponent(safeReturnTo(next))}`);
   return user;
 }

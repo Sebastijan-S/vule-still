@@ -17,7 +17,7 @@ for (const location of locations) for (const minutes of [20, 40]) {
   const context = await request("rpc/availability_context", { method: "POST", body: JSON.stringify({ p_date: date, p_location: location.id, p_service: service.id }) });
   assert.ok(context.server_time); assert.equal(context.service.minutes, minutes);
   assert.equal(context.week?.entries.some(s => s.date === date && s.location_id === location.id), true);
-  assert.ok(context.occupied.every(b => Object.keys(b).sort().join() === "end,location_id,start"));
+  assert.ok(context.occupied.every(b => Object.keys(b).sort().join() === "end,location_id,start,travel_gap_minutes"));
   const response = await fetch(`http://127.0.0.1:3100/api/availability?date=${date}&location=${location.id}&service=${service.id}`, { signal: AbortSignal.timeout(20000) });
   assert.equal(response.status, 200); assert.equal(response.headers.get("cache-control"), "no-store");
   const result = await response.json(); assert.equal(result.reason, "available"); assert.ok(result.slots.length > 0);

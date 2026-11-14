@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { Header, Footer } from "@/components/site-shell";
 import "./globals.css";
 
 const manrope = localFont({
@@ -22,7 +21,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="sr-Latn"
       className={`${manrope.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col"><a href="#main" className="skip-link">Preskoči na sadržaj</a><Header />{children}<Footer /></body>
+      <body className="min-h-full flex flex-col"><a href="#main" className="skip-link">Preskoči na sadržaj</a>{children}</body>
     </html>
   );
 }

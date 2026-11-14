@@ -2,6 +2,32 @@
 
 Datum: 31.10.2026. Status: potvrđeni odgovori i posebno označeni projektni predlozi.
 
+## Najnovije odluke o prvoj verziji — 3.11.2026.
+
+Ove odluke imaju prednost nad starijim tabelama ispod. Redosled rada i stvarni rezultati nalaze se u [planu faza](../PHASE_PLAN.md).
+
+| Oznaka | Potvrđena odluka / granica obima |
+| --- | --- |
+| MVP01 | Cilj je upotrebljiv testni sajt u 2–3 radna dana od nastavka, zavisno od pristupa servisima i kritičnih provera; nije garantovan datum. |
+| MVP02 | Faza 11 se za sada izbacuje: blokiranje/odblokiranje, ekrani upravljanja uslugama, vanredna kasna otkazivanja, grupne promene pogođenih rezervacija i audit pregled odlažu se. Stariji opisi ostaju budući obim. |
+| MVP03 | Faze 8 i 9 rade se zajedno: zakazivanje, Moji termini, redovno otkazivanje i jednostavna trajna obaveštenja. Pre njih mora proći faza 7 sa stvarnim istovremenim zahtevima za isti termin. |
+| MVP04 | Vlasnička stranica može biti obična, uz postojeći dizajn. Prioritet su lako pregledanje/menjanje termina i rasporeda, ručni unos i redovno otkazivanje; bez dodatnog estetskog razvoja. Dva postojeća kalendara ostaju. |
+| MVP05 | Konfliktna objava rasporeda mora biti odbijena, bez tihog ili grupnog otkazivanja. Vlasnik prvo pojedinačno rešava termine dozvoljenim radnjama. Zaštita započetih termina ostaje. |
+| MVP06 | Razvoj je na Vule-still-test (`xfbjgxtgvlyndonhlupm`): imejl + lozinka bez potvrde mejla. Konačna potvrda/oporavak čekaju domen i završnu aktivaciju; stariji OTP-only opisi nisu aktuelno uputstvo. |
+| MVP07 | Na kraju ostaju produkciona šema/podešavanja, stvarni vlasnik, domen/SMTP/mejl, kontakti, hosting/HTTPS i završni testovi. Testni korisnici/rezervacije se ne kopiraju; primena na produkciju i objava zahtevaju odgovarajuće ovlašćenje. |
+| MVP08 | Istorijska granica prethodne predaje: tada samo dokumentacija; korisnik je naknadno nastavio implementaciju i proveru faza 7–10. Bez produkcionih promena, objave, commit-a ili push-a u aktuelnom zadatku. |
+| MVP09 | Prijava telefonom i lozinkom ostaje za zaseban završni blok pre produkcije. Sada se ne menja testna prijava imejlom i lozinkom bez potvrde. Konačni identitet, oporavak i verifikacija stvarnog vlasnika moraju se posebno razraditi/proveriti; stariji opis konačne imejl prijave nije nova implementaciona instrukcija. |
+
+Izbacivanje faze 11 ne uklanja privatnost, ovlašćenja, zabranu preklapanja, interne zapise o promenama ni snimke usluge/trajanja. Usluge ostaju prema postojećem katalogu; uređivač usluga nije deo ove isporuke. Rok se skraćuje obimom i jednostavnijim ekranima.
+
+## Razjašnjenje administratorskog interfejsa — 3.11.2026.
+
+- Faza 10 zahteva zaseban direktan ulaz `/administrator` i sopstveno zaglavlje/navigaciju bez javnih „Usluge“, „Lokacije“ i „Moji termini“. Link se ne prikazuje u javnom meniju. Poznavanje linka nije ovlašćenje: ostaju Auth, sesija i vlasničko članstvo.
+- Dnevni i sedmodnevni pregled, filteri, kontakt/status, ručni gost, atomsko pomeranje na drugi datum i redovno otkazivanje ostaju obavezni.
+- Radno vreme je odvojena radnja od rezervacije klijenta. Konkretni kalendari podržavaju smene, pauze, neradne dane i rad nedeljom.
+- Uobičajena nedelja mora imati jasan urednik za buduće nacrte. Promena šablona nikada automatski ne prepisuje postojeće nacrte ili objavljene nedelje.
+- Raniji „Ready for review“ za fazu 10 potvrđivao je proverene operacije, ne prihvaćen zaseban interfejs. Novo korisničko prihvatanje ostaje na čekanju; raniji testni dokazi se čuvaju.
+
 ## Odgovori 1–30
 
 | Broj | Tema | Potvrđena odluka |

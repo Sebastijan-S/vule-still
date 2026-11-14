@@ -1,10 +1,12 @@
 # Dostupnost — faza 6
 
+Aktuelno stanje faza 7–10: konfliktna objava se odbija bez automatskog otkazivanja. Booking migracija je **već primenjena** na Vule-still-test i koristi isti red frizera za potvrdu i objavu, uz nezavisno range-exclusion ograničenje protiv preklapanja. Javno zauzeće sadrži i `travel_gap_minutes`, bez identiteta ili kontakta. Dostupnost ostaje savetodavna; konačna transakcija proverava sva pravila. Stvarne paralelne provere su prošle u prethodnom nastavku, a završni customer/owner Chrome paket sada prolazi 12/12. Ne ponavljati migraciju; videti [stvarnu istoriju](DEPLOYMENT.md) i [rezultate](tests/RESULTS.md).
+
 ## Ugovor
 
 `GET /api/availability?date=YYYY-MM-DD&location=<UUID>&service=<UUID>` radi bez prijave i vraća `Cache-Control: no-store`. Nevažeći parametri vraćaju 400; privremeno nedostupna baza ili nepostojeća lokalna granica smene vraćaju 503 sa porukom na srpskom. Nema upisa rezervacije.
 
-Izvor je `availability_context(date,uuid,uuid)`: serversko vreme, trajanje aktivne usluge, objavljeni raspored/revizija i zauzeti intervali jednog zajedničkog frizera sa obe lokacije. Javni rezultat sadrži vreme i razlog dostupnosti, bez identiteta, imena, telefona i ID-jeva rezervacija. Privatna tabela `reservations` je samo temelj intervala; browser uloge nemaju direktno čitanje ili pisanje. Otkazane rezervacije ne ulaze u zauzeće.
+Izvor je `availability_context(date,uuid,uuid)`: serversko vreme, trajanje aktivne usluge, objavljeni raspored/revizija i zauzeti intervali jednog zajedničkog frizera sa obe lokacije. Javni rezultat sadrži vreme i razlog dostupnosti, bez identiteta, imena, telefona i ID-jeva rezervacija. Privatna tabela `reservations` sadrži pune rezervacije; korisnik pod RLS-om čita samo svoje, vlasnik koristi kontrolisani pregled, a direktni browser upisi nisu dozvoljeni. Otkazane rezervacije ne ulaze u zauzeće.
 
 `src/lib/availability.ts` računa dostupnost iz tih činjenica. Klijent ne može zadati trajanje, zauzeće ili merodavno vreme. Datum je od današnjeg datuma u Srbiji do danas + 14 uključivo; početak je najmanje 15 minuta u budućnosti. Ceo termin mora stati u slobodan period. Korak je trajanje usluge od početka svakog slobodnog perioda; vremenski rok filtrira niz, ne pomera njegov početak. Intervali su poluotvoreni, pa je dodirivanje dozvoljeno. Zauzeće druge lokacije proširuje se za objavljeni razmak putovanja.
 
@@ -26,7 +28,7 @@ Koristi se `Europe/Belgrade`, bez fiksnog UTC pomaka. DST preskočene lokalne gr
 
 `node --env-file=.env.test.local scripts/check-availability-live.mjs`: stvarni anonimni Supabase RPC i lokalni Next.js API za obe lokacije i obe dužine. Dana 3. 11. proveren je objavljeni 4. novembar: Zrenjanin 15/7, Neuzin 9/4 početaka za 20/40 min. Skripta samo čita i ne šalje mejl. Primeri sa zauzećem, ekstremnim vremenom i DST koriste izolovane fixtures; nisu unošeni stvarni termini klijenata.
 
-## Obavezno pre uključivanja rezervacija u fazi 7
+## Istorijska kontrolna lista pre faze 7 — sada integrisano uz odbijanje konflikta
 
 - Proširiti `reservations` vlasništvom/gostom, snimkom usluge/trajanja, idempotencijom i integritetom; tek zatim dodati kontrolisane atomske upise.
 - Dostupnost je savetodavna. Konačna transakcija mora ponovo proveriti sva pravila pod istim zaključavanjem reda nedelje koje koristi objava rasporeda, uz vremenska pravila u bazi. Nije dovoljno verovati ranijem API rezultatu ili slati klijentsko trajanje.

@@ -30,25 +30,22 @@
   },
   "include": [
     "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "tests/**/*.ts",
     "**/*.mts",
-    ".next-phase1-build/types/**/*.ts",
-    ".next-phase1-build/dev/types/**/*.ts",
-    ".next-phase4-build/types/**/*.ts",
-    ".next-phase4-build/dev/types/**/*.ts",
-    ".next-test/types/**/*.ts",
+    "*.ts",
     ".next-test/dev/types/**/*.ts",
-    ".next-phase3-build/types/**/*.ts",
-    ".next-phase3-build/dev/types/**/*.ts",
-    ".next-phase5-build/types/**/*.ts",
-    ".next-phase5-build/dev/types/**/*.ts",
-    ".next-phase6-build/types/**/*.ts",
-    ".next-phase6-build/dev/types/**/*.ts"
+    ".next-phase7-build/types/**/*.ts",
+    ".next-phase7-build/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    ".next",
+    ".next-phase1-build",
+    ".next-phase3-build",
+    ".next-phase4-build",
+    ".next-phase5-build",
+    ".next-phase6-build"
   ]
 }

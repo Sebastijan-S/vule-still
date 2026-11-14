@@ -9,13 +9,17 @@ export type AvailabilityContext = {
   reason?: "outside_horizon" | "inactive_location" | "inactive_service";
   service?: { minutes: number; active: boolean };
   week?: { entries: Shift[]; travel_gap_minutes: number; revision: number } | null;
-  occupied?: { start: string; end: string; location_id: string }[];
+  occupied?: { start: string; end: string; location_id: string; travel_gap_minutes?: number }[];
 };
 export type AvailabilityReason = "available" | "unpublished" | "closed" | "fully_booked" | "insufficient_duration" | "cutoff" | "outside_horizon" | "inactive_location" | "inactive_service" | "invalid_schedule";
 const formatter = new Intl.DateTimeFormat("en-CA", { timeZone: BUSINESS_ZONE, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
 function parts(instant: number) {
   const p = Object.fromEntries(formatter.formatToParts(new Date(instant)).map(x => [x.type, x.value]));
   return { date: `${p.year}-${p.month}-${p.day}`, time: `${p.hour}:${p.minute}`, wall: Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute) };
+}
+export function businessOffsetMinutes(instant: string) {
+  const value = Date.parse(instant);
+  return (parts(value).wall - value) / MINUTE;
 }
 export function addCalendarDays(date: string, days: number) {
   const instant = new Date(`${date}T12:00:00Z`); instant.setUTCDate(instant.getUTCDate() + days); return instant.toISOString().slice(0, 10);
@@ -78,7 +82,9 @@ export function calculateAvailability(date: string, locationId: string, context:
     const work = shifts.map(s => localInterval(date, s.start_minute, s.end_minute));
     const breaks = shifts.flatMap(s => s.breaks.map(b => localInterval(date, b.start_minute, b.end_minute)));
     const occupied = (context.occupied ?? []).map(b => {
-      const buffer = b.location_id === locationId ? 0 : context.week!.travel_gap_minutes * MINUTE;
+      const gap = b.travel_gap_minutes ?? context.week!.travel_gap_minutes;
+      if (!Number.isInteger(gap) || gap < 0) throw new Error("Invalid travel interval");
+      const buffer = b.location_id === locationId ? 0 : gap * MINUTE;
       const start = Date.parse(b.start) - buffer, end = Date.parse(b.end) + buffer;
       if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) throw new Error("Invalid occupied interval");
       return { start, end };

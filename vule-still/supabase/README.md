@@ -1,5 +1,19 @@
 # Vule Still — početni SQL paket
 
+## Najnovije — zaseban vlasnički interfejs i šablon, 3.11.2026.
+
+Faza 10 sada ima `/administrator`, zasebno zaglavlje/navigaciju, rezervacije, postojeća dva radna kalendara i urednik uobičajene nedelje. Dve nove owner-template migracije su već primenjene **samo na Vule-still-test**, pored četiri postojeće; [tačno mapiranje](DEPLOYMENT.md). Ne ponavljati nijednu od tih primena. Šablon podržava svih sedam dana, pauze i podrazumevani razmak; owner RPC ima očekivanu reviziju, a priprema uzima koherentan snimak. Postojeće nedelje se ne prepisuju.
+
+Aktuelne završne provere: **122 izolovane SQL, 23 lokalne i 15/15 Chrome**, build/lint, stvarna konkurentna template revizija i novi budući nacrt. [Rezultati](tests/RESULTS.md) odvajaju ih od ranijih provera. Svih 29 prethodnih rezervacija očuvano je, uključujući postojeću potvrđenu; raspored i šablon vraćeni. Faza 10 je spremna za korisnički pregled, nije prihvaćena. [Uputstvo vlasniku](../../docs/ADMINISTRACIJA.md). Dalji zapisi su istorijski tamo gde se brojevi/status razlikuju.
+
+## Aktuelno stanje — 3.11.2026.
+
+Ovaj dokument čuva početni model ispod; tekući **Vule-still-test** sada ima celu osnovu faza 1–10: sesije/aktivnost, raspored/dostupnost, atomske customer/owner rezervacije i trajne događaje. Četiri novije migracije su već primenjene; stvarne cloud verzije i lokalni izvori dati su u [DEPLOYMENT.md](DEPLOYMENT.md). Ne ponavljati ih niti starije SQL Editor primene. Konačni zbir je **115 izolovanih SQL + 23 lokalne + 12/12 Chrome**, uz prethodno proverenu stvarnu konkurentnost; [rezultati](tests/RESULTS.md) razdvajaju vrste dokaza. Nije bilo nove migracije u završnom owner nastavku.
+
+Potvrda/izmena/otkazivanje idu kroz kontrolisane RPC-ove sa proverom sesije i uloge/vlasništva. Direktni upisi privatnih booking tabela nisu dozvoljeni. Konfliktna objava se odbija bez otkazivanja. Javni API ne prikazuje lične podatke. Detalji svakodnevnog rada su u [uputstvu aplikacije](../README.md). Faza 11 i zaseban završni telefon + lozinka blok ostaju van trenutnog zadatka. Produkcija nije korišćena ili menjana.
+
+## Istorijski početni paket
+
 Status 01.11.2026: početne migracije su primenjene na potvrđen Supabase projekat. Next.js klijenti su podešeni, a stvarni javni API je provereno dostupan sa publishable ključem. Rezultati i preostala ograničenja: [zapisnik primene](DEPLOYMENT.md).
 
 ## Potvrđeni obim i okruženja
