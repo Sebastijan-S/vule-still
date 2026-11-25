@@ -1,5 +1,9 @@
 # Vule Still — implementation plan and shortened first release
 
+**User approval — 25 November 2026:** UI step 3 is approved for commit and normal push to `origin/phase/07-booking`. Continue with UI step 4 after this checkpoint; later UI changes are a separate review.
+
+**Latest handoff — 25 November 2026, UI step 3:** Multi-service public and manual-owner forms are ready for user review on `phase/07-booking`, based on `bba6762788bb994918d2bf09c24e91b017e7faa1`. Single-location skipping, direct service links, full session draft restoration, legacy scalar drafts/pending payloads, withdrawal review and exact-key retries are implemented. Verification: 152 isolated SQL, 30 local tests, 19 targeted Chrome tests, lint, TypeScript and final test build pass. A second location is covered by isolated shared-navigation tests; a full browser flow with a reactivated location is not claimed. Existing Next.js security reminder remains; no dependency upgrade. All 51 pre-existing visits are unchanged, five new synthetic visits are cancelled, and the temporary week is restored to absent. Two pre-existing confirmed visits remain untouched. Details: [UI plan](docs/PLAN-UI-I-VISE-USLUGA.md), [results](vule-still/supabase/tests/RESULTS.md). Dev server remains at `http://127.0.0.1:3100`; owner entrance `/administrator`. No production changes, commit or push. Await the user's review before Git publication; UI steps 4–8 remain separate.
+
 Created: 1 November 2026. Updated: 3 November 2026. Living implementation plan and phase handoff.
 
 ## Current direction — supersedes older handoffs

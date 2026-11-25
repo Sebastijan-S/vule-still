@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import { addCalendarDays, localMinuteInstants } from "../../src/lib/availability";
 
-test("multi-service API races, exact-key retry, saved item views, movement and legacy UI", async ({ page, browser }) => {
+test("multi-service API races, exact-key retry, saved item views, movement and single-service UI", async ({ page, browser }) => {
   test.setTimeout(180000);
   const url=process.env.NEXT_PUBLIC_SUPABASE_URL!, key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
   expect(new URL(url).hostname).toBe("xfbjgxtgvlyndonhlupm.supabase.co");
@@ -102,7 +102,6 @@ test("multi-service API races, exact-key retry, saved item views, movement and l
     // Clear controlled visits, then prove the existing single-service UI still works.
     for(const row of (await rpc("get_owner_reservations",{p_from:date,p_to:date})).reservations.filter((r:{attendee_name:string;status:string})=>r.attendee_name.startsWith(tag)&&r.status==="confirmed")) await rpc("owner_cancel_reservation",{p_request_key:randomUUID(),p_reservation:row.id});
     await page.goto("/rezervacija?lokacija=neuzin&usluga=brada");
-    await page.getByRole("button",{name:"Neuzin",exact:true}).click();await page.getByRole("button",{name:"Brada 10 min",exact:true}).click();
     await page.getByLabel("Datum",{exact:true}).fill(date);
     await page.locator(".slot-options button").first().click();await page.getByRole("button",{name:"Pregled rezervacije",exact:true}).click();
     await page.getByLabel("Druga osoba",{exact:true}).check();await page.getByLabel("Ime osobe koja dolazi",{exact:true}).fill(`${tag} legacy`);
@@ -110,7 +109,7 @@ test("multi-service API races, exact-key retry, saved item views, movement and l
     await expect(page.getByText("REZERVACIJA JE POTVRĐENA",{exact:true})).toBeVisible();
     const legacy=(await (await page.request.get("/api/reservations")).json()).reservations.find((r:{attendee_name:string})=>r.attendee_name===`${tag} legacy`);
     expect(legacy.items).toHaveLength(1);expect(legacy.duration_minutes).toBe(10);
-    console.log("PASS: partial-interval race, concurrent exact-key retry, both item views, whole-visit move, manual API and legacy UI");
+    console.log("PASS: partial-interval race, concurrent exact-key retry, both item views, whole-visit move, manual API and single-service UI");
   } finally {
     if(touched) {
       const rows=(await rpc("get_owner_reservations",{p_from:date,p_to:date})).reservations;

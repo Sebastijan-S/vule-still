@@ -1,5 +1,13 @@
 # Primenjeni početni Supabase paket
 
+## UI korak 3 — 25.11.2026.
+
+Ovaj korak menja samo aplikacioni izbor i prikaz; **nema nove migracije niti produkcione primene**. Koristi postojeći ugovor za više usluga iz koraka 2. Testiranje je ograničeno na Vule-still-test (`xfbjgxtgvlyndonhlupm`), bez Auth/SMTP promena.
+
+Pre/posle testova svih **51 zatečenih rezervacija** imaju isti fingerprint `350e0d3bf95ee14e4f6faf7299db1d6e`, uključujući dve ranije potvrđene. Pet novih sintetičkih dolazaka je otkazano, a njihova istorija/stavke/ključevi ostaju. Ukupno je 56 rezervacija, dve ranije potvrđene i **0 novih aktivnih UI3 termina**. Nova kontrolisana nedelja `2026-11-23` vraćena je u odsutno stanje tek posle provere praznog nacrta/objave, revizija 2/2, oba razmaka 60 i odsustva potvrđenih termina. Ranije nedelje i revizije su očuvane. Jedan zahtev za uslovno čišćenje je istekao bez izvršenja; ponovljen isti zahtev uspešno je završio.
+
+Pri povratku koda zadržati sve ranije aditivne migracije i kombinovane rezervacije; ne brisati stavke ili svoditi dolaske na prvu uslugu. Korisničko prihvatanje, commit i push čekaju pregled. [Rezultati i granice provera](tests/RESULTS.md).
+
 ## Više usluga u jednom dolasku — 25.11.2026. (aktuelno)
 
 Samo **Vule-still-test** (`xfbjgxtgvlyndonhlupm`). Lokalni izvor [20261125173402_multiple_service_reservations.sql](migrations/20261125173402_multiple_service_reservations.sql) primenjen je kao cloud verzija **`20261125174427`**, naziv `multiple_service_reservations`. Migracija dodaje `reservations.service_count`, tabelu `reservation_items`, kontrolisane RPC-ove i čitanje svih stavki. Postojeći pojedinačni RPC-ovi i sačuvani ključevi nisu prepisivani. Nasleđeni `service_id` ostaje ID prve sačuvane stavke, a `service_name` sažet naziv; ukupno trajanje je na roditelju. Čitanje ne zavisi od današnjih kataloških trajanja.

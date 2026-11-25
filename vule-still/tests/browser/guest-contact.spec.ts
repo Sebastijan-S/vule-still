@@ -10,9 +10,8 @@ test("catalogue has revised durations and only Neuzin can be booked", async ({ p
   await expect(zr).toContainText("Zrenjanin rezervacije uskoro");
   await expect(zr.getByRole("link")).toHaveCount(0);
   await page.goto("/rezervacija?lokacija=zrenjanin");
-  await expect(page.getByRole("button", { name: /Neuzin/ })).toBeVisible();
+  await expect(page.getByText("Lokacija: Neuzin", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: /Zrenjanin/ })).toHaveCount(0);
-  await page.getByRole("button", { name: "Neuzin", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Usluge", exact: true })).toBeVisible();
   await expect(page.locator(".booking-options .booking-option")).toHaveCount(4);
   await expect(page.getByText("Premium usluge", { exact: true })).toHaveCount(0);

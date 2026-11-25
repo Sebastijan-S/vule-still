@@ -1,5 +1,7 @@
 # Vule Still — registar odluka
 
+**UI korak 3 — 25.11.2026:** Opšti ulaz bira jednu ili više različitih usluga, svaku najviše jednom. Trajanja se sabiraju za jednu osobu i jedan dolazak; „Šišanje i brada“ ostaje zasebna opcija bez automatskog spajanja naziva. Jedina lokacija je u sažetku; druga dostupna lokacija vraća izbor. Link konkretne usluge vodi odmah na vreme. Izmena usluga čuva datum/lokaciju i ponovo proverava početak. Javni nacrt opstaje u istoj sesiji kroz prijavu/profil/osvežavanje; povučene stavke zahtevaju pregled preostalih. Nepoznat ishod ima prednost nad katalogom: prvo originalni payload sa istim ključem. Vlasnički ručni unos ima iste kućice i zbir; potvrđeni sastav se menja otkazivanjem i novim dolaskom. Implementacija čeka korisničko odobrenje pre commit-a i push-a. [Rezultati provera](../vule-still/supabase/tests/RESULTS.md).
+
 **Ažuriranje 14.11.2026:** [nove potvrđene odluke](IZMENE-2026-11-14.md) menjaju prijavu gostiju na telefon ili mejl bez potvrda, trajanja četiri usluge i dostupnost novih rezervacija samo za Neuzin. Imaju prednost nad ranijim odgovorima ispod.
 
 Datum: 31.10.2026. Status: potvrđeni odgovori i posebno označeni projektni predlozi.

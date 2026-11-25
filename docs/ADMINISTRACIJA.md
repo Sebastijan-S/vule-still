@@ -12,11 +12,11 @@ Administratorsko zaglavlje ima tri odeljka, bez javnih sekcija sajta:
 
 ## Ručni klijent, pomeranje i otkazivanje
 
-Korak 2 je pripremio bazu i API za više usluga u jednom dolasku. Takav termin na kartici prikazuje sve stavke, pojedinačna trajanja i ukupan broj minuta; pri pomeranju koristi sačuvano ukupno trajanje. Izmena vremena i otkazivanje važe za ceo dolazak. Za promenu sastava otkaži termin i napravi novi. Sama forma za novi ručni unos i dalje bira jednu uslugu; više izbora uključuje se u koraku 3.
+Od koraka 3 i forma za novi ručni unos bira više usluga. Označi jednu ili više kućica i proveri pojedinačna trajanja i zbir minuta. Sve usluge pripadaju jednoj osobi koja dolazi. Kartica prikazuje sve sačuvane stavke, a pomeranje koristi njihov prvobitni zbir. Izmena vremena i otkazivanje važe za ceo dolazak. Za promenu sastava otkaži termin i napravi novi.
 
 Od 25.11.2026. za novo zakazivanje dostupne su četiri standardne usluge. Tri premium usluge su privremeno povučene, a ranije potvrđeni premium termini ostaju u pregledu sa sačuvanim nazivom i trajanjem. Mogu se pomerati i redovno otkazivati po istim pravilima. Povlačenje usluge ne otkazuje postojeći termin.
 
-- **Dodaj ručni termin:** dovoljno je ime osobe; telefon je opcion. Izaberi lokaciju, jednu uslugu, datum i ponuđeni slobodni termin, pa potvrdi. Gostu se ne otvara nalog i nema obaveštenje u aplikaciji. Bez telefona nema kontakta za poziv.
+- **Dodaj ručni termin:** dovoljno je ime osobe; telefon je opcion. Izaberi lokaciju, jednu ili više usluga, datum i ponuđeni slobodni termin. Proveri zbir i početak–kraj, pa potvrdi. Bez usluge potvrda nije moguća. Promena izbora ponovo proverava slobodna vremena. Gostu se ne otvara nalog i nema obaveštenje u aplikaciji. Bez telefona nema kontakta za poziv.
 - **Izmeni termin:** na kartici promeni datum, lokaciju i slobodno vreme. Moguće je pomeranje na sledeći ili drugi dozvoljeni dan. Ime osobe i kontakt gosta mogu se izmeniti; povezani korisnik koristi trenutni telefon iz profila. Sačuvana usluga i trajanje ostaju isti. Za promenu usluge koristi otkazivanje i novi unos.
 - Neuspešno pomeranje čuva prethodni termin. Ako se izabrani termin u međuvremenu zauzme, osveži slobodne termine i izaberi drugi.
 - **Otkaži termin:** potvrdi prikazanu radnju. Odustajanje u potvrdi ne menja rezervaciju. Za redovnu izmenu i otkazivanje mora ostati najmanje 30 minuta do starog početka. Novi početak mora biti najmanje 15 minuta u budućnosti, unutar objavljenog rada i horizonta do danas + 14 dana uključivo.

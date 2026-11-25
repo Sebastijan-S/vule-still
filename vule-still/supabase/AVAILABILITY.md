@@ -8,7 +8,7 @@ Ova dopuna ima prednost nad opisom jedne usluge ispod. Dostupnost i potvrda kori
 - Duplikati ID-jeva, prazan izbor, neaktivna stavka, drugačiji naziv/trajanje, neispravan pregled ili prekratak period odbijaju se bez delimičnog upisa. Isti ključ pokriva ceo izbor i jedan dolazak. Redosled klikova ne menja ključ: identitet se normalizuje po ID-ju, a prikazani redosled pamti se po katalogu. Pošto je prvo proveren sačuvani ključ, povučena/preimenovana stavka ne blokira razrešenje već uspešnog zahteva.
 - Odgovori za rezervaciju, „Moje termine“, vlasnički pregled i obaveštenja sadrže sačuvane `items`. Pomeranje koristi prvobitni zbir; otkazivanje oslobađa ceo interval. Sastav potvrđenog dolaska se ne menja. Stari trajni rezultati ključeva mogu nemati `items`, pa prikazi zadržavaju sačuvan sažetak i zbir kao kompatibilan prikaz.
 
-Forme još uvek biraju jednu uslugu. Korak 3 će povezati višestruki izbor sa ovim ugovorom. Pri vraćanju UI-ja zadržati aditivnu šemu i sve podatke; ne svoditi raniji kombinovani dolazak na prvu uslugu niti brisati stavke.
+Korak 3 povezuje javni i vlasnički višestruki izbor sa ovim ugovorom. Prikaz sabira trajanja za pregled; ponuđene početke i kraj vraća postojeći mehanizam dostupnosti na osnovu SQL podataka. Izmena izbora ponovo učitava dostupnost i zadržava početak samo ako pripada novom rezultatu. Javni pregled šalje `services`, snimak svake stavke i zbir. Pending zahtev se ponavlja pre provere današnjeg kataloga/dostupnosti, u originalnom scalar ili array obliku sa istim ključem. Pri vraćanju UI-ja zadržati aditivnu šemu i sve podatke; ne svoditi raniji kombinovani dolazak na prvu uslugu niti brisati stavke.
 
 ---
 

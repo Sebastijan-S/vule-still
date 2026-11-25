@@ -1,5 +1,6 @@
 "use client";
 import { AppointmentServices } from "@/components/appointment-services";
+import { ServicePicker, selectionSnapshot } from "@/components/service-picker";
 import { useEffect, useRef, useState } from "react";
 import { addCalendarDays } from "@/lib/availability";
 import { businessDate, dateLabel, timeLabel, offsetLabel, postBooking, type Appointment } from "@/lib/appointment-display";
@@ -13,41 +14,48 @@ export type OwnerState = { server_time: string; reservations: Appointment[] };
 function ReservationForm({ row, day, today, locations, services, disabled, onSubmit, onClose }: { row: Appointment | null; day: string; today: string; locations: Location[]; services: Service[]; disabled: boolean; onSubmit: (value: Mutation) => void; onClose: () => void }) {
   const formPanel = useRef<HTMLElement>(null);
   useEffect(() => { formPanel.current?.scrollIntoView({ block: "start", behavior: "smooth" }); }, []);
-  const [location, setLocation] = useState(row?.location_id ?? locations[0]?.id ?? ""), [service, setService] = useState(row?.service_id ?? services[0]?.id ?? "");
+  const [location, setLocation] = useState(row?.location_id ?? locations[0]?.id ?? ""), [selection, setSelection] = useState<string[]>([]);
   const [date, setDate] = useState(row ? businessDate(row.starts_at) : day < today ? today : day), [start, setStart] = useState(row ? new Date(row.starts_at).toISOString() : "");
   const [name, setName] = useState(row?.attendee_name ?? ""), [phone, setPhone] = useState(row?.user_id ? "" : row?.phone ?? "");
   const [availability, setAvailability] = useState<Availability | null>(null), [error, setError] = useState(""), [loading, setLoading] = useState(true), [reload, setReload] = useState(0);
+  const query = new URLSearchParams({ date, location });
+  selection.forEach(id => query.append("services", id));
+  const path = row ? `/api/owner/availability?date=${date}&location=${location}&reservation=${row.id}` : `/api/availability?${query}`;
+  const [loadedPath, setLoadedPath] = useState("");
   useEffect(() => {
+    if (!row && !selection.length) return;
     const controller = new AbortController();
     Promise.resolve().then(() => { setLoading(true); setAvailability(null); setError(""); });
-    const path = row ? `/api/owner/availability?date=${date}&location=${location}&reservation=${row.id}` : `/api/availability?date=${date}&location=${location}&service=${service}`;
     fetch(path, { cache: "no-store", signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]) })
       .then(async response => { const data = await response.json(); if (!response.ok) throw new Error(data.error); return data as Availability; })
-      .then(result => { if (!controller.signal.aborted) { setAvailability(result); setStart(current => result.slots.some(s => s.start === current) ? current : ""); } })
+      .then(result => { if (!controller.signal.aborted) { setAvailability(result); setLoadedPath(path); setStart(current => result.slots.some(s => s.start === current) ? current : ""); } })
       .catch(cause => { if (!controller.signal.aborted) setError(cause.message ?? "Slobodni termini trenutno nisu dostupni."); })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
-  }, [date, location, service, row, reload]);
-  const selected = services.find(s => s.id === service);
+  }, [path, selection.length, row, reload]);
+  const items = selectionSnapshot(services, selection);
+  const total = row?.duration_minutes ?? items.reduce((sum, item) => sum + item.duration_minutes, 0);
+  const current = loadedPath === path && (row || selection.length) ? availability : null;
+  const slot = current?.slots.find(s => s.start === start);
   return <section ref={formPanel} className="booking-panel owner-form" aria-label={row ? "Izmena rezervacije" : "Ručna rezervacija"}><h2>{row ? "Izmeni rezervaciju" : "Ručna rezervacija"}</h2><p className="field-help">{row?.user_id ? "Termin je povezan sa nalogom. Kontakt se čita iz trenutnog profila, a promena ostaje u obaveštenjima klijenta." : "Gost nema nalog i neće dobiti obaveštenje u aplikaciji. Dovoljno je ime; kontakt je opcion."}</p>{row && <p>Sačuvana usluga: <strong>{row.service_name} · {row.duration_minutes} min</strong>. Za promenu usluge otkaži termin i unesi novi.</p>}
     {row && <AppointmentServices items={row.items} total={row.duration_minutes} />}{error && <p className="form-error" role="alert">{error}</p>}
     <form onSubmit={event => {
-      event.preventDefault(); if (!availability || !start) return;
-      const common = { request_key: crypto.randomUUID(), location, start, schedule_revision: availability.schedule_revision, name: name.trim(), phone: phone.trim() || null };
+      event.preventDefault(); if (!current || !slot || disabled || loading) return;
+      const common = { request_key: crypto.randomUUID(), location, start, schedule_revision: current.schedule_revision, name: name.trim(), phone: phone.trim() || null };
       if (row) onSubmit({ ...common, operation: "update", reservation: row.id, version: row.version });
-      else if (selected) onSubmit({ ...common, operation: "create", service, expected_service_name: selected.name, expected_duration: selected.duration_minutes });
+      else if (items.length) onSubmit({ ...common, operation: "create", services: items.map(item => item.service_id), expected_items: items, expected_duration: total });
     }}>
       <fieldset disabled={disabled}><legend className="sr-only">Podaci rezervacije</legend>
         <label className="booking-field">Ime osobe koja dolazi<input required maxLength={120} value={name} onChange={e => setName(e.target.value)} /></label>
         {!row?.user_id && <label className="booking-field">Telefon gosta (opciono)<input type="tel" value={phone} onChange={e => setPhone(e.target.value)} maxLength={40} placeholder="064… ili međunarodni pozivni kod" /><span className="field-help">Srpski lokalni broj ili međunarodni broj sa +.</span></label>}
         <label className="booking-field">Lokacija rezervacije<select value={location} onChange={e => { setLocation(e.target.value); setStart(""); }}>{locations.map(l => <option value={l.id} key={l.id}>{l.name}</option>)}</select></label>
-        {!row && <label className="booking-field">Usluga rezervacije<select value={service} onChange={e => { setService(e.target.value); setStart(""); }}>{services.map(s => <option value={s.id} key={s.id}>{s.name} · {s.duration_minutes} min</option>)}</select></label>}
+        {!row && <><p>Sve izabrane usluge pripadaju jednoj osobi koja dolazi.</p><ServicePicker services={services} selected={selection} onChange={setSelection} /></>}
         <label className="booking-field">Datum rezervacije<input type="date" value={date} min={today} max={addCalendarDays(today, 14)} onChange={e => { setDate(e.target.value); setStart(""); }} required /></label>
         <button type="button" className="text-button" onClick={() => setReload(n => n + 1)}>Osveži slobodne termine</button>
-        {loading ? <p role="status">Proveravamo dostupnost…</p> : availability && !availability.slots.length ? <p className="booking-empty">{availability.reason === "unpublished" ? "Raspored još nije objavljen." : "Nema slobodnog termina za ovaj izbor. Proveri datum ili lokaciju."}</p> : <div className="slot-options" aria-label="Slobodni termini za vlasnika">{availability?.slots.map(s => <button type="button" key={s.start} aria-pressed={start === s.start} onClick={() => setStart(s.start)}>{s.local_start}<small>{offsetLabel(s.start)}</small></button>)}</div>}
-        {start && <p>Izbor: {dateLabel(start)} · {timeLabel(start)}–{timeLabel(new Date(Date.parse(start) + (row?.duration_minutes ?? selected?.duration_minutes ?? 20) * 60000).toISOString())}</p>}
+        {!row && !items.length ? <p>Izaberi najmanje jednu uslugu.</p> : loading ? <p role="status">Proveravamo dostupnost…</p> : current && !current.slots.length ? <p className="booking-empty">{current.reason === "unpublished" ? "Raspored još nije objavljen." : "Nema slobodnog termina za ovaj izbor. Proveri datum ili lokaciju."}</p> : <div className="slot-options" aria-label="Slobodni termini za vlasnika">{current?.slots.map(s => <button type="button" key={s.start} aria-pressed={start === s.start} onClick={() => setStart(s.start)}>{s.local_start}<small>{offsetLabel(s.start)}</small></button>)}</div>}
+        {slot && <p>Izbor: {dateLabel(start)} · {timeLabel(start)}–{timeLabel(slot.end)} · ukupno {total} min</p>}
         <p className="field-help">Važe objavljene smene, 15 minuta do novog početka i horizont 14 dana. Postojeći termin se može menjati najmanje 30 minuta pre početka.</p>
-        <div className="booking-toolbar"><button className="button" type="submit" disabled={!name.trim() || !start || loading || disabled}>{row ? "Sačuvaj izmenu" : "Potvrdi ručni termin"}</button><button type="button" className="text-button" onClick={onClose} disabled={disabled}>Odustani</button></div>
+        <div className="booking-toolbar"><button className="button" type="submit" disabled={!name.trim() || !slot || loading || disabled}>{row ? "Sačuvaj izmenu" : "Potvrdi ručni termin"}</button><button type="button" className="text-button" onClick={onClose} disabled={disabled}>Odustani</button></div>
       </fieldset>
     </form>
   </section>;

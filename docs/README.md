@@ -1,5 +1,7 @@
 # Vule Still — plan nove aplikacije
 
+**Aktuelno 25.11.2026:** Korak 3 [UI plana](PLAN-UI-I-VISE-USLUGA.md) je spreman za pregled: javni i ručni unos više usluga, skraćeni tok za jednu lokaciju, čuvanje izbora i tačno ponavljanje pending zahteva. Važe nova kataloška trajanja i jedan dolazak sa zbirom svih različitih stavki. [Najnoviji rezultati](../vule-still/supabase/tests/RESULTS.md): 152 SQL, 30 lokalnih i 19 ciljanih Chrome provera. Istorijski opisi jedne usluge/ranijeg Auth toka ispod nisu aktuelna implementacija. Server: http://127.0.0.1:3100. Bez commit-a/push-a do korisničkog pregleda.
+
 Osnovna specifikacija: 31.10.2026. Aktuelni skraćeni plan: 3.11.2026.
 
 Najnovije odluke imaju prednost nad starijim opisima: cilj je proveren testni sajt u 2–3 radna dana od nastavka, uz pouzdan pristup servisima. Faze 8/9 rade se zajedno, administracija je jednostavna, a faza 11 je odložena. Bezbednost rezervacija i privatnost ostaju obavezne.

@@ -344,6 +344,12 @@ h2 { font-weight: 650; letter-spacing: -.045em; line-height: 1.25; }
 .booking-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 24px; }
 .booking-option { display: flex; align-items: center; justify-content: space-between; text-align: left; gap: 12px; padding: 18px; min-height: 64px; border: 1px solid #444; background: #181818; }
 .booking-option[aria-pressed="true"], .slot-options [aria-pressed="true"] { border-color: #f34; background: #6e1b20; }
+.service-choice { cursor: pointer; }
+.service-choice:has(input:checked) { border-color: #f34; background: #6e1b20; }
+.service-choice:focus-within { outline: 2px solid white; outline-offset: 3px; }
+.service-choice input { width: 22px; height: 22px; flex-shrink: 0; accent-color: #bc242a; }
+.service-choice strong { flex: 1; }
+.service-choice span { white-space: nowrap; }
 .booking-panel fieldset { border: 0; padding: 0; margin: 24px 0; min-width: 0; }
 .booking-panel legend { color: #ccc; padding-bottom: 12px; }
 .booking-field { display: grid; gap: 8px; max-width: 460px; margin: 20px 0; font-size: 14px; }

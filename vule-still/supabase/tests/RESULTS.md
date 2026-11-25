@@ -1,5 +1,33 @@
 # Rezultat početnih SQL provera
 
+## UI korak 3 — 25. novembar 2026. (aktuelno)
+
+**Spremno za korisnički pregled.** Samo Vule-still-test (`xfbjgxtgvlyndonhlupm`); bez novih migracija, izmene Auth podešavanja, produkcije, commit-a ili push-a.
+
+- **152 SQL provere PASS**, ceo postojeći izolovani PGlite paket. **30 lokalnih testova PASS**: auth 6, dostupnost 14, booking 10 (uključujući 5 novih navigacionih provera). **Lint, TypeScript, `git diff --check` i konačni `build:test` PASS.** Next.js je više pokušaja zaustavio poznatim sigurnosnim podsetnikom posle kompilacije/generisanja stranica; završno ponavljanje vraća 0 uz zadržano upozorenje. Zavisnosti nisu menjane; sigurnosna nadogradnja ostaje zaseban posao.
+- **19/19 ciljanih Google Chrome testova PASS**, 1 worker, 0 retries, oko 1,1 min na razvojnom serveru `127.0.0.1:3100`. Paket: novi `booking-flow.spec.ts`, 11 scenarija iz `booking-selection.spec.ts`, šest prilagođenih premium regresija i postojeći test kataloga. Posle završne male korekcije čitanja nacrta dodatno su ponovljena **3/3** direktna/stara povratna linka (ne predstavljaju tri dodatna različita scenarija). Ceo stariji browser paket sa istorijskim Zrenjanin/Auth očekivanjima nije označen kao ponovljen.
+- Na **360/390/1280 px** provereni su opšti ulaz bez koraka jedine lokacije, kućice, zabrana praznog izbora, zbir 20+10=30, uklanjanje poslednje stavke, promena posle izabranog vremena, odbacivanje prekratkog početka i zadržavanje i dalje odgovarajućeg početka, prethodni korak i refresh pregleda. Direktan `?usluga=brada` otvara vreme; dodavanje druge stavke opstaje pri refresh-u istog linka. Stari scalar nacrt radi i kroz stari link sa `lokacija`/`usluga` parametrima.
+- Povučena stavka u sačuvanom kombinovanom izboru ostavlja ostale usluge, datum/lokaciju i drugu osobu; uklanja početak i zahteva eksplicitan pregled, uključujući novi refresh. Pending testovi za **scalar/array × potvrđen/odbijen** šalju isti originalni payload, redosled i ključ, bez prethodne provere dostupnosti, i kada sačuvana stavka/lokacija više nisu u aktivnoj ponudi. To su kontrolisani HTTP odgovori; stvarna SQL idempotentnost ima zasebne regresije.
+- **Stvarni ceo tok:** anonimni ulaz → dve usluge → datum/vreme → prijava kontaktom → refresh profila → dopuna profila → povratak na isti pregled → druga osoba → refresh → potvrda. Browser odbacuje odgovor tek pošto server uspešno upiše dolazak; posle refresh-a isti sačuvani payload/ključ vraćaju **jednu rezervaciju, dve stavke, 30 min i jedno obaveštenje**. Izbor, pregled, potvrda, „Moji termini“ i vlasnička kartica saglasno prikazuju **16:00–16:30**. Vlasnički ručni unos dve usluge bez telefona daje **17:00–17:30**; pomeranje celog dolaska na **17:30–18:00** čuva obe stavke, bez mogućnosti izmene sastava u formi. Oba termina redovno su otkazana. Vlasnički formular proveravan je na 390/1280 px.
+- Povratak druge dostupne lokacije proveren je **na izolovanim podacima zajedničke navigacione funkcije**: vraćaju se sva četiri koraka i obavezan izbor, rade direktna i sačuvana druga lokacija, ne vraća se povučena lokacija. Nije aktiviran Zrenjanin u cloud bazi. Pokušaj browser simulacije menjanjem HTML/RSC odgovora nije hidriran zbog Chrome ograničenja lokalne mreže; automatska provera odbila je dodatnu browser dozvolu. Taj pokušaj nije prolaz; dozvole nisu menjane i nema tvrdnje da je testiran ceo browser tok druge lokacije.
+- **Integrisani browser:** ručno pregledani desktop i mobilni izbor 390 px, vidljive kućice i oznake, zbir 30 min i prelazak na vreme. Chrome snimci su u ignorisanom `test-results/ui3-*.png` (izbor, vreme na tri širine, pregled/potvrda i vlasnički formular).
+- **Čišćenje i readback:** početnih **51 rezervacija** ima identičan fingerprint pre/posle (`350e0d3bf95ee14e4f6faf7299db1d6e`). Ostaju dve ranije potvrđene rezervacije; **0 novih aktivnih UI3 termina**. Ukupno **56** rezervacija, od toga pet novih sintetičkih **otkazanih** (jedna iz dijagnostičkog prolaza i po dve iz dva završena prolaza). Stavke, ključevi, audit i obaveštenja ostaju kao istorija. Tri sintetičke gostujuće sesije/profila ostaju samo u testu. Nova kontrolisana nedelja `2026-11-23` korišćena je samo uz prethodnu proveru da ne postoji; svaki put je ispražnjena redovnim RPC-ovima, pa uslovno uklonjena tek uz tačan snimak `[]/[]`, revizije 2/2, razmake 60/60 i odsustvo aktivnih termina. Završno ponovo ne postoji. Ranije nedelje imaju iste revizije **76/44** (`2026-11-02`) i **0/1** (`2026-11-16`). Nije brisana istorija ili prepisivan tuđ raspored.
+
+Ponovljive komande iz `vule-still/`:
+
+```powershell
+npm.cmd --prefix supabase/tests test
+npm.cmd run test:auth
+npm.cmd run test:availability
+npm.cmd run test:booking
+npm.cmd run lint
+npx.cmd tsc --noEmit
+npm.cmd run build:test
+npm.cmd run test:browser -- booking-selection.spec.ts booking-flow.spec.ts premium-withdrawal.spec.ts guest-contact.spec.ts -g "selection|direct legacy|withdrawn|pending|catalogue|legacy scalar|controlled full"
+```
+
+Stvarni flow test namerno odbija postojeću buduću nedelju umesto da prepiše raspored; čišćenje nove prazne nedelje zahteva uslovnu proveru iznad. Lokalni razvojni server ostaje **uključen na http://127.0.0.1:3100**, administracija `/administrator`.
+
 ## UI korak 2 — 25. novembar 2026. (aktuelno)
 
 - **152 SQL provere PASS** u celom paketu: ranijih 137 + 15 novih grupa `multiple-services.test.mjs`. Izolovani PGlite sa Auth fixtures. Provereni su rollback neuspešne migracije, stari ključevi nastali pre migracije, tačan prenos potvrđene i otkazane premium istorije iz sačuvanih vrednosti, 20+10 u neprekinutih 30 minuta, odbijanje kraćih/prekinutih perioda i pauza, prazne/duple/neaktivne stavke, promena pregleda, pravila razmaka između lokacija, rollback neuspešnog obaveštenja sa svim stavkama i ključem, istorija, ceo pomereni/otkazani interval, scalar i jednočlani novi format, RLS/ACL i nepromenljivost/odložena provera integriteta.

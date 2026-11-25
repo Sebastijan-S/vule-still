@@ -12,7 +12,7 @@
     "lint": "eslint",
     "test:auth": "node --experimental-strip-types --test --test-isolation=none tests/auth-validation.test.mjs",
     "test:availability": "node --experimental-strip-types --test --test-isolation=none tests/availability.test.mjs",
-    "test:booking": "node --experimental-strip-types --test --test-isolation=none tests/booking.test.mjs",
+    "test:booking": "node --experimental-strip-types --test --test-isolation=none tests/booking.test.mjs tests/booking-navigation.test.mjs",
     "test:browser": "node --env-file=.env.test.local node_modules/@playwright/test/cli.js test",
     "check:supabase": "node --env-file=.env.local scripts/check-supabase.mjs"
   },

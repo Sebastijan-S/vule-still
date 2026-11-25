@@ -5,7 +5,7 @@ import { randomUUID } from "node:crypto";
 
 const location = "10000000-0000-4000-8000-000000000002";
 const service = "30000000-0000-4000-8000-000000000007";
-const withdrawn = "Izabrana usluga trenutno nije u ponudi. Izaberi neku od dostupnih usluga.";
+const withdrawn = "Deo sačuvanog izbora više nije u ponudi. Preostale usluge su sačuvane. Pregledaj izbor i izaberi vreme.";
 const today = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Belgrade", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
 async function login(page: Page, role: "owner" | "customer") {
   expect(new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!).hostname).toBe("xfbjgxtgvlyndonhlupm.supabase.co");
@@ -41,17 +41,18 @@ test("withdrawn draft retains location/date and clears the old service and start
   await page.goto("/rezervacija");
   await expect(page.getByRole("heading", { name: "Usluge", exact: true })).toBeVisible();
   await expect(page.getByText(withdrawn, { exact: true })).toBeVisible();
-  await expect.poll(() => page.evaluate(() => JSON.parse(sessionStorage.getItem("vule-booking-selection")!))).toEqual({ location, service: "", date, start: "" });
-  await page.getByRole("button", { name: "Brada 10 min", exact: true }).click();
+  await expect.poll(() => page.evaluate(() => JSON.parse(sessionStorage.getItem("vule-booking-selection")!))).toMatchObject({ location, services: [], date, start: "", needsReview: true });
+  await page.getByRole("checkbox", { name: "Brada 10 min", exact: true }).check();
+  await page.getByRole("button", { name: "Izaberi vreme", exact: true }).click();
   await expect(page.getByLabel("Datum", { exact: true })).toHaveValue(date);
-  await expect(page.getByText("Neuzin · Brada · 10 min", { exact: true })).toBeVisible();
+  await expect(page.getByText("Brada · 10 min", { exact: true })).toBeVisible();
   await expect(page.getByText(withdrawn, { exact: true })).toHaveCount(0);
 });
 
 test("owner manual selector has four services and API rejects all withdrawn IDs", async ({ page }) => {
   await login(page, "owner");
   await page.getByRole("button", { name: "Dodaj ručni termin", exact: true }).click();
-  await expect(page.getByLabel("Usluga rezervacije").locator("option")).toHaveCount(4);
+  await expect(page.locator(".owner-form").getByRole("checkbox")).toHaveCount(4);
   for (const [suffix, name, duration] of [["5", "Sređivanje obrva britvom", 10], ["6", "Sređivanje brade sa toplim peškirom", 20], ["7", "Tretman ušnim svećama", 40]] as const) {
     const data = { request_key: randomUUID(), location, service: `30000000-0000-4000-8000-00000000000${suffix}`, start: `${today()}T20:00:00.000Z`, schedule_revision: 1, expected_service_name: name, expected_duration: duration, attendee_name: null };
     const headers = { origin: "http://127.0.0.1:3100" };

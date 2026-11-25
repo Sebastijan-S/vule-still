@@ -47,6 +47,10 @@ Svaka numerisana celina ima sopstvenu proveru i može da bude poseban commit. Ko
 
 ### 3. P0 — Skraćeno zakazivanje i izbor više usluga
 
+**Korisničko odobrenje 25.11.2026:** Korak 3 odobren je za commit i normalni push na `phase/07-booking`. Sledeći rad je korak 4, koji se vodi odvojeno od ovog checkpointa.
+
+**Status 25.11.2026:** Implementiran javni i vlasnički višestruki izbor; spremno za korisnički pregled. Jedina lokacija se preskače, direktni linkovi vode na vreme, ceo nacrt i stari scalar format ostaju čitljivi, a pending zahtev koristi svoj originalni payload. Provere i granice dokaza: [RESULTS.md](../vule-still/supabase/tests/RESULTS.md). Bez nove migracije, promene produkcije, commit-a ili push-a. Koraci 4–8 nisu uključeni u ovaj korak.
+
 **Problem.** Opšti ulaz zahteva izbor jedine lokacije. Link sa konkretne usluge ponavlja poznate odluke. Danas sam klik na uslugu odmah prebacuje klijenta na datum, što onemogućava izbor druge stavke.
 
 **Rezultat.**
