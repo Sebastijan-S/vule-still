@@ -18,6 +18,8 @@ try {
   await db.exec(await readFile(new URL("./auth-fixture.sql", import.meta.url), "utf8"));
   const migrations = new URL("../migrations/", import.meta.url);
   for (const name of (await readdir(migrations)).filter(n => n.endsWith(".sql")).sort()) await db.exec(await readFile(new URL(name, migrations), "utf8"));
+  // Exercise both locations, including future reactivation, in this regression fixture.
+  await db.exec("update public.locations set booking_enabled=true");
   for (const [id, sid] of [[owner, session], [customer, customerSession]]) {
     await db.query("insert into auth.users (id,email,email_confirmed_at) values ($1,$2,now())", [id, `${id}@example.invalid`]);
     await db.query("insert into auth.sessions (id,user_id) values ($1,$2)", [sid, id]);

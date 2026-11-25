@@ -89,3 +89,7 @@ Use controllable timestamps only in an isolated environment for phase 3 activity
 The test project now has a real `session_id` and Data API basis for phase 3. The versioned migration was applied there after 17 isolated SQL checks, and direct API denial at the 30-day boundary plus live no-touch-on-refresh checks passed. The future-production project has **not** received this migration. The remaining phase 3 gate is real owner email verification before bootstrap. Final email-plus-password delivery is also required before public release. The temporary password-only project must never be treated as proof of email ownership.
 
 References: [Supabase passwordless email](https://supabase.com/docs/guides/auth/auth-email-passwordless), [Supabase sessions](https://supabase.com/docs/guides/auth/sessions), and the project [phase plan](../../PHASE_PLAN.md).
+# Aktuelna promena — 14.11.2026.
+
+Javni korisnički ulaz sada koristi anonymous Auth sesiju uz telefon ili mejl, bez potvrda. Administracija zadržava odvojen zaštićen ulaz. [Potvrđene izmene i podešavanje](../../docs/IZMENE-2026-11-14.md) imaju prednost nad istorijskim razvojnim uputstvima ispod; klijentski OTP/lozinka i raniji zahtev vraćanja potvrde mejla više nisu plan za goste.
+

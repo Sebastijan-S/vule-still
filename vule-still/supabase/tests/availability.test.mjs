@@ -8,6 +8,8 @@ try {
   await db.exec(await readFile(new URL("./auth-fixture.sql", import.meta.url), "utf8"));
   const dir = new URL("../migrations/", import.meta.url);
   for (const file of (await readdir(dir)).filter(f => f.endsWith(".sql")).sort()) await db.exec(await readFile(new URL(file, dir), "utf8"));
+  // Exercise both locations, including future reactivation, in this regression fixture.
+  await db.exec("update public.locations set booking_enabled=true");
   const today = (await db.query("select (statement_timestamp() at time zone 'Europe/Belgrade')::date::text as date")).rows[0].date;
   const location = (await db.query("select id from public.locations where slug='zrenjanin'")).rows[0].id;
   const service = (await db.query("select id from public.services where is_active limit 1")).rows[0].id;

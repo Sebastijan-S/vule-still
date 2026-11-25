@@ -11,7 +11,7 @@ const manrope = localFont({
 
 export const metadata: Metadata = {
   title: "Vule Still",
-  description: "Vule Still — rezervacija termina u Zrenjaninu i Neuzinu.",
+  description: "Vule Still — rezervacija termina u Neuzinu. Zrenjanin rezervacije uskoro.",
   icons: { icon: "/brand/favicon.svg" },
 };
 

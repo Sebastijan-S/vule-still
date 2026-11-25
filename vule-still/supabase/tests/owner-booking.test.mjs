@@ -13,6 +13,8 @@ try{
   await db.exec(await readFile(new URL("./auth-fixture.sql",import.meta.url),"utf8"));
   const dir=new URL("../migrations/",import.meta.url);
   for(const name of (await readdir(dir)).filter(n=>n.endsWith(".sql")).sort()) await db.exec(await readFile(new URL(name,dir),"utf8"));
+  // Exercise both locations, including future reactivation, in this regression fixture.
+  await db.exec("update public.locations set booking_enabled=true");
   for(const user of [owner,alice]){await db.query("insert into auth.users(id,email,email_confirmed_at) values($1,$2,now())",[user,`owner-test-${user.slice(-1)}@example.invalid`]);await db.query("insert into auth.sessions(id,user_id) values($1,$2)",[session(user),user]);await as(user,()=>rpc("ensure_session_access"));}
   await db.query("insert into public.admin_memberships(user_id) values($1)",[owner]);
   await db.query("update public.profiles set first_name='Test',last_name='Klijent',phone='+381641234567' where id=$1",[alice]);

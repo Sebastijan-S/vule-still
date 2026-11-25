@@ -1,5 +1,7 @@
 # Vule Still — registar odluka
 
+**Ažuriranje 14.11.2026:** [nove potvrđene odluke](IZMENE-2026-11-14.md) menjaju prijavu gostiju na telefon ili mejl bez potvrda, trajanja četiri usluge i dostupnost novih rezervacija samo za Neuzin. Imaju prednost nad ranijim odgovorima ispod.
+
 Datum: 31.10.2026. Status: potvrđeni odgovori i posebno označeni projektni predlozi.
 
 ## Najnovije odluke o prvoj verziji — 3.11.2026.

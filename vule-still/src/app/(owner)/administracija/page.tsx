@@ -13,7 +13,7 @@ async function Content() {
   if (!membership.data) return <OwnerDenied />;
   const today = businessDate(new Date().toISOString());
   const [locations, services, appointments] = await Promise.all([
-    db.from("locations").select("id,name").eq("is_active", true).order("sort_order"),
+    db.from("locations").select("id,name").eq("is_active", true).eq("booking_enabled", true).order("sort_order"),
     db.from("services").select("id,name,duration_minutes").eq("is_active", true).order("sort_order"),
     db.rpc("get_owner_reservations", { p_from: today, p_to: today }),
   ]);

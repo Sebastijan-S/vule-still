@@ -6,8 +6,8 @@ export type Challenge = { email: string; sentAt: number };
 export type AuthState = { step: "email" | "code"; email: string; sentAt?: number; error?: string; message?: string };
 export type ProfileState = {
   error?: string;
-  errors?: Partial<Record<"first_name" | "last_name" | "phone", string>>;
-  values?: { first_name: string; last_name: string; phone: string };
+  errors?: Partial<Record<"first_name" | "last_name" | "phone" | "contact_email", string>>;
+  values?: { first_name: string; last_name: string; phone: string; contact_email: string };
 };
 export function readText(value: FormDataEntryValue | null): string { return typeof value === "string" ? value.trim() : ""; }
 export function normalizeEmail(value: string): string | null {
@@ -45,7 +45,13 @@ export function normalizePhone(value: string): string | null {
   return phone?.isValid() ? phone.number : null;
 }
 export function validName(value: string): boolean { return value.trim().length > 0 && value.length <= 80 && !/[\x00-\x1f\x7f]/.test(value); }
-export function profileComplete(profile: { first_name: string | null; last_name: string | null; phone: string | null } | null): boolean { return !!(profile?.first_name && profile.last_name && profile.phone); }
+export function normalizeContact(value: string): { phone: string | null; contact_email: string | null } | null {
+  const phone = normalizePhone(value);
+  if (phone) return { phone, contact_email: null };
+  const contact_email = normalizeEmail(value);
+  return contact_email ? { phone: null, contact_email } : null;
+}
+export function profileComplete(profile: { first_name: string | null; last_name: string | null; phone: string | null; contact_email?: string | null } | null): boolean { return !!(profile?.first_name && profile.last_name && (profile.phone || profile.contact_email)); }
 export function authErrorMessage(error: { code?: string; status?: number }, verifying = false): string {
   if (error.code === "over_email_send_rate_limit") return "Dostignut je limit slanja imejlova za ceo sajt. Pokušaj kasnije; novo slanje odmah neće uspeti.";
   if (error.status === 429 || error.code === "over_request_rate_limit") return "Previše pokušaja. Sačekaj malo, pa pokušaj ponovo.";

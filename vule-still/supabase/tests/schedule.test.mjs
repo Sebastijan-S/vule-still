@@ -22,6 +22,8 @@ try {
     try { await db.exec(await readFile(new URL(name,migrations), "utf8")); }
     catch (error) { console.error(name,error.message,error.position); throw error; }
   }
+  // Multi-location scheduling regression fixture (reactivation remains supported).
+  await db.exec("update public.locations set booking_enabled=true");
   await check("template has six days, two shifts per day, no Sunday", async () => {
     assert.equal((await db.query("select count(*)::int as n from public.schedule_templates")).rows[0].n,12);
   });

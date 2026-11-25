@@ -10,6 +10,7 @@ create table auth.users (
   id uuid primary key,
   email text unique,
   email_confirmed_at timestamptz,
+  is_anonymous boolean not null default false,
   raw_user_meta_data jsonb not null default '{}'::jsonb
 );
 

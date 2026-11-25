@@ -1,5 +1,7 @@
 # Vule Still — PRD
 
+**Ažuriranje 14.11.2026:** Za aktuelnu prijavu bez potvrda, nova trajanja i zakazivanje samo za Neuzin važe [naknadno potvrđene izmene](IZMENE-2026-11-14.md), koje imaju prednost nad ranijim opisima u ovom dokumentu.
+
 Verzija 1.0 • 31.10.2026. • Specifikacija za pregled pre izrade.
 
 Izvor zahteva: opis nove aplikacije, četiri dostavljena screenshota i odgovori 1–43 iz [registra odluka](ODLUKE.md). Oznake P1–P13 u registru predstavljaju predložena tumačenja detalja.

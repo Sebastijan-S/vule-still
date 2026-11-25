@@ -174,6 +174,7 @@ export type Database = {
       }
       locations: {
         Row: {
+          booking_enabled: boolean
           address: string | null
           created_at: string
           id: string
@@ -185,6 +186,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          booking_enabled?: boolean
           address?: string | null
           created_at?: string
           id?: string
@@ -196,6 +198,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          booking_enabled?: boolean
           address?: string | null
           created_at?: string
           id?: string
@@ -211,6 +214,7 @@ export type Database = {
       profiles: {
         Row: {
           booking_blocked: boolean
+          contact_email: string | null
           created_at: string
           first_name: string | null
           id: string
@@ -220,6 +224,7 @@ export type Database = {
         }
         Insert: {
           booking_blocked?: boolean
+          contact_email?: string | null
           created_at?: string
           first_name?: string | null
           id: string
@@ -229,6 +234,7 @@ export type Database = {
         }
         Update: {
           booking_blocked?: boolean
+          contact_email?: string | null
           created_at?: string
           first_name?: string | null
           id?: string

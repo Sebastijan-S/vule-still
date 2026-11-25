@@ -5,6 +5,8 @@ import {
   authErrorMessage,
   normalizeCode,
   normalizeEmail,
+  normalizeContact,
+  profileComplete,
   normalizePhone,
   parseChallenge,
   safeReturnTo,
@@ -16,6 +18,14 @@ test("return destinations stay on approved local routes", () => {
   for (const value of ["https://evil.example", "//evil.example", "/\\evil.example", "/admin", "/profil\nLocation: https://evil.example", "javascript:alert(1)"]) {
     assert.equal(safeReturnTo(value), "/moji-termini");
   }
+});
+
+test("guest contact accepts either phone or email without requiring both", () => {
+  assert.deepEqual(normalizeContact("064 123 4567"), { phone: "+381641234567", contact_email: null });
+  assert.deepEqual(normalizeContact(" Guest@Example.RS "), { phone: null, contact_email: "guest@example.rs" });
+  for (const value of ["", "12345", "not an email", "<a@example.rs>"]) assert.equal(normalizeContact(value), null);
+  assert.equal(profileComplete({ first_name: "Test", last_name: "Gost", phone: null, contact_email: "guest@example.rs" }), true);
+  assert.equal(profileComplete({ first_name: "Test", last_name: "Gost", phone: null, contact_email: null }), false);
 });
 
 test("email and OTP fields reject malformed values", () => {

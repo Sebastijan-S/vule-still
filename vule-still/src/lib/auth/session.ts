@@ -19,7 +19,7 @@ export const getCurrentUser = cache(async () => {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
   if (error && ![400, 401, 403].includes(error.status ?? 0)) throw new Error("Provera prijave trenutno nije dostupna.");
-  if (error || !data.user?.email_confirmed_at) return null;
+  if (error || !data.user || (!data.user.is_anonymous && !data.user.email_confirmed_at)) return null;
   if (!await ensureSessionAccess()) return null;
   return data.user;
 });

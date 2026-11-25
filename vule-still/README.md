@@ -1,5 +1,7 @@
 # Vule Still
 
+**Aktuelno, 14.11.2026:** Klijenti ulaze telefonom ili mejlom bez lozinke/kodova. Primenjena su nova trajanja četiri usluge i nove rezervacije samo za Neuzin; Zrenjanin ostaje za kasnije. Detalji, Supabase Auth opcija potrebna za pokretanje i granice sesije gosta: [potvrđene izmene](../docs/IZMENE-2026-11-14.md). Ovaj dodatak ima prednost nad istorijskim opisom test prijave ispod. `npm.cmd run dev` pokreće test aplikaciju na http://127.0.0.1:3000; `npm.cmd run dev:test` koristi port 3100. Administracija je na `/administrator`.
+
 Next.js + TypeScript aplikacija sa Supabase bazom. Faze 1–6 su završene za testni obim, a faze 7–10 su spremne za korisnički pregled: atomske rezervacije, kompletan korisnički tok, Moji termini/obaveštenja i zasebna administracija. Faza 10 ima direktan ulaz, svoje zaglavlje/navigaciju i urednik uobičajene nedelje. Završne provere: **15/15 Google Chrome, 122 izolovane SQL, 23 lokalne, build i lint**, uz nove stvarne template integracione provere. Raniji dokazi su sačuvani. Korisničko prihvatanje nije evidentirano. Razvoj koristi samo Vule-still-test; nema produkcione objave. Prijava telefonom i lozinkom ostaje za poseban završni blok pre produkcije; sada je aktivan postojeći testni imejl + lozinka bez potvrde.
 
 ## Lokalno pokretanje

@@ -57,7 +57,7 @@ export async function authenticatePassword(_previous: PasswordState, form: FormD
   // Owner administration has its own membership gate and needs no customer
   // booking profile. Navigation to this route never grants owner permissions.
   let destination = isOwnerDestination(next) ? next : `/profil?next=${encodeURIComponent(next)}`;
-  const { data: profile, error } = await supabase.from("profiles").select("first_name,last_name,phone").eq("id", result.data.user.id).maybeSingle();
+  const { data: profile, error } = await supabase.from("profiles").select("first_name,last_name,phone,contact_email").eq("id", result.data.user.id).maybeSingle();
   if (!error && profileComplete(profile)) destination = next;
   revalidatePath("/", "layout");
   redirect(destination);

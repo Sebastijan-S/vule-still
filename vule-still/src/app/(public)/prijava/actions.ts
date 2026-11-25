@@ -53,7 +53,7 @@ export async function authenticate(previous: AuthState, form: FormData): Promise
   let destination = isOwnerDestination(destinationNext) ? destinationNext : `/profil?next=${encodeURIComponent(destinationNext)}`;
   try {
     const supabase = await createClient();
-    const { data: profile, error } = await supabase.from("profiles").select("first_name,last_name,phone").eq("id", userId).maybeSingle();
+    const { data: profile, error } = await supabase.from("profiles").select("first_name,last_name,phone,contact_email").eq("id", userId).maybeSingle();
     if (!error && profileComplete(profile)) destination = destinationNext;
   } catch { /* The protected profile page will surface a data error. */ }
   (await cookies()).delete(CHALLENGE_COOKIE);
