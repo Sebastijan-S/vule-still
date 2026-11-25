@@ -1,7 +1,8 @@
 import { normalizePhone } from "./auth/validation";
+import { parseServiceSelection, type ServiceSelection } from "./booking";
 type Common = { request_key: string };
 type Selection = { location: string; start: string; schedule_revision: number; name: string; phone: string | null };
-type Create = Common & Selection & { operation: "create"; service: string; expected_service_name: string; expected_duration: number };
+type Create = Common & Selection & ServiceSelection & { operation: "create" };
 type Update = Common & Selection & { operation: "update"; reservation: string; version: number };
 type Cancel = Common & { operation: "cancel"; reservation: string };
 const id = (value: unknown): value is string => typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
@@ -19,6 +20,6 @@ export function parseOwnerMutation(value: unknown): Create | Update | Cancel | n
   if (typeof v.phone === "string" && v.phone.trim() && !phone) return null;
   const common = { request_key: v.request_key, location: v.location, start: v.start, schedule_revision: v.schedule_revision, name: v.name.trim(), phone };
   if (v.operation === "update") return id(v.reservation) && positive(v.version) ? { ...common, operation: "update", reservation: v.reservation, version: v.version } : null;
-  if (!id(v.service) || typeof v.expected_service_name !== "string" || !v.expected_service_name.trim() || !positive(v.expected_duration) || v.expected_duration % 10 !== 0) return null;
-  return { ...common, operation: "create", service: v.service, expected_service_name: v.expected_service_name, expected_duration: v.expected_duration };
+  const selection = parseServiceSelection(v);
+  return selection ? { ...common, operation: "create", ...selection } : null;
 }

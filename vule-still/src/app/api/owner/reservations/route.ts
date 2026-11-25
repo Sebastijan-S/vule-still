@@ -14,7 +14,9 @@ export async function POST(request: Request) {
     const result = input.operation === "cancel"
       ? await db.rpc("owner_cancel_reservation", { p_request_key: input.request_key, p_reservation: input.reservation })
       : input.operation === "create"
-        ? await db.rpc("owner_create_reservation", { p_request_key: input.request_key, p_location: input.location, p_service: input.service, p_start: input.start, p_expected_revision: input.schedule_revision, p_name: input.name, p_expected_name: input.expected_service_name, p_expected_duration: input.expected_duration, ...(input.phone ? { p_phone: input.phone } : {}) })
+        ? "services" in input
+          ? await db.rpc("owner_create_services_reservation", { p_request_key: input.request_key, p_location: input.location, p_services: input.services, p_start: input.start, p_expected_revision: input.schedule_revision, p_name: input.name, p_expected_items: input.expected_items, p_expected_duration: input.expected_duration, ...(input.phone ? { p_phone: input.phone } : {}) })
+          : await db.rpc("owner_create_reservation", { p_request_key: input.request_key, p_location: input.location, p_service: input.service, p_start: input.start, p_expected_revision: input.schedule_revision, p_name: input.name, p_expected_name: input.expected_service_name, p_expected_duration: input.expected_duration, ...(input.phone ? { p_phone: input.phone } : {}) })
         : await db.rpc("owner_update_reservation", { p_request_key: input.request_key, p_reservation: input.reservation, p_expected_version: input.version, p_location: input.location, p_start: input.start, p_expected_revision: input.schedule_revision, p_name: input.name, ...(input.phone ? { p_phone: input.phone } : {}) });
     if (result.error || !result.data) return bookingError(result.error?.message ?? "UNAVAILABLE");
     return Response.json({ reservation: result.data }, { headers: bookingHeaders });

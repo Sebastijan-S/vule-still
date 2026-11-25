@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { AppointmentServices } from "@/components/appointment-services";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { addCalendarDays } from "@/lib/availability";
@@ -117,7 +118,7 @@ export function BookingForm({ locations, services, user, today, initial }: { loc
     } catch { setError(request ? "Ishod potvrde još nije poznat. Proveri isti zahtev dugmetom ispod; nemoj zakazivati novi termin dok ne proveriš Moje termine." : "Dostupnost trenutno ne može da se proveri. Pokušaj ponovo."); }
     finally { setBusy(false); }
   }
-  if (success) return <section ref={panel} className="booking-panel" aria-label="Potvrđena rezervacija"><p className="eyebrow">REZERVACIJA JE POTVRĐENA</p><h2>Vidimo se <em>uskoro.</em></h2><dl className="appointment-facts"><div><dt>Usluga</dt><dd>{success.service_name} · {success.duration_minutes} min</dd></div><div><dt>Lokacija</dt><dd>{selectedLocation?.name}</dd></div><div><dt>Termin</dt><dd>{dateLabel(success.starts_at)} · {timeLabel(success.starts_at)}–{timeLabel(success.ends_at)} ({offsetLabel(success.starts_at)})</dd></div><div><dt>Osoba</dt><dd>{success.attendee_name}</dd></div></dl><p>Potvrda je sačuvana u aplikaciji. Obaveštenja vidiš kada otvoriš Moje termine; ne šaljemo booking mejlove.</p><Link className="button" href="/moji-termini">Moji termini</Link></section>;
+  if (success) return <section ref={panel} className="booking-panel" aria-label="Potvrđena rezervacija"><p className="eyebrow">REZERVACIJA JE POTVRĐENA</p><h2>Vidimo se <em>uskoro.</em></h2><dl className="appointment-facts"><div><dt>Usluga</dt><dd>{success.service_name} · {success.duration_minutes} min</dd></div><div><dt>Lokacija</dt><dd>{selectedLocation?.name}</dd></div><div><dt>Termin</dt><dd>{dateLabel(success.starts_at)} · {timeLabel(success.starts_at)}–{timeLabel(success.ends_at)} ({offsetLabel(success.starts_at)})</dd></div><div><dt>Osoba</dt><dd>{success.attendee_name}</dd></div></dl><AppointmentServices items={success.items} total={success.duration_minutes} /><p>Potvrda je sačuvana u aplikaciji. Obaveštenja vidiš kada otvoriš Moje termine; ne šaljemo booking mejlove.</p><Link className="button" href="/moji-termini">Moji termini</Link></section>;
   return <section ref={panel} className="booking-panel" aria-label="Zakazivanje termina">
     <ol className="booking-progress">{["Lokacija", "Usluga", "Termin", "Pregled"].map((label, i) => <li key={label}><button type="button" aria-current={step === i ? "step" : undefined} disabled={busy || !!pending || (i > 0 && !location) || (i > 1 && !service) || (i > 2 && !start)} onClick={() => { setStep(i); setError(""); }}>{i + 1}. {label}</button></li>)}</ol>
     <p className="field-help">Vreme u Srbiji · izbor nije rezervacija niti zauzeće termina.</p>

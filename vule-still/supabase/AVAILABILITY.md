@@ -1,3 +1,17 @@
+# UI korak 2 — više usluga, 25.11.2026.
+
+Ova dopuna ima prednost nad opisom jedne usluge ispod. Dostupnost i potvrda koriste zbir stvarnih kataloških trajanja. Sve stavke moraju stati u isti slobodan period; roditeljski interval ostaje jedina zauzetost frizera.
+
+- Dostupnost: `GET /api/availability?date=YYYY-MM-DD&location=<uuid>&services=<uuid-1>&services=<uuid-2>`. Ključ `services` se ponavlja. Raniji `service=<uuid>` ostaje podržan; mešanje formata i duplikati se odbijaju. Novi RPC je `services_availability_context(date,uuid,uuid[])`. Odgovor dodaje `items` u redosledu kataloga i ukupni `duration_minutes`; postojeći vremenski mehanizam koristi taj zbir.
+- Javna potvrda koristi postojeći `POST /api/reservations`. Novi oblik zamenjuje `service` i `expected_service_name` sa `services: string[]` i `expected_items: { service_id, service_name, duration_minutes }[]`; `expected_duration` je zbir, a postojeći `request_key`, `location`, `start`, `schedule_revision` i opcioni `attendee_name` ostaju. Novi RPC: `confirm_services_reservation`. SQL sam čita aktivnost/nazive/trajanja, poredi pregled svake stavke i ukupno trajanje, pa atomskom transakcijom upisuje roditelja, stavke, audit, obaveštenje i ključ.
+- Vlasnički unos: isti novi izbor u `POST /api/owner/reservations` uz `operation: "create"`, `name` i opcioni `phone`; novi RPC `owner_create_services_reservation`. Izmena/otkazivanje i raniji pojedinačni oblik ostaju isti.
+- Duplikati ID-jeva, prazan izbor, neaktivna stavka, drugačiji naziv/trajanje, neispravan pregled ili prekratak period odbijaju se bez delimičnog upisa. Isti ključ pokriva ceo izbor i jedan dolazak. Redosled klikova ne menja ključ: identitet se normalizuje po ID-ju, a prikazani redosled pamti se po katalogu. Pošto je prvo proveren sačuvani ključ, povučena/preimenovana stavka ne blokira razrešenje već uspešnog zahteva.
+- Odgovori za rezervaciju, „Moje termine“, vlasnički pregled i obaveštenja sadrže sačuvane `items`. Pomeranje koristi prvobitni zbir; otkazivanje oslobađa ceo interval. Sastav potvrđenog dolaska se ne menja. Stari trajni rezultati ključeva mogu nemati `items`, pa prikazi zadržavaju sačuvan sažetak i zbir kao kompatibilan prikaz.
+
+Forme još uvek biraju jednu uslugu. Korak 3 će povezati višestruki izbor sa ovim ugovorom. Pri vraćanju UI-ja zadržati aditivnu šemu i sve podatke; ne svoditi raniji kombinovani dolazak na prvu uslugu niti brisati stavke.
+
+---
+
 # Dostupnost — faza 6
 
 Aktuelno stanje faza 7–10: konfliktna objava se odbija bez automatskog otkazivanja. Booking migracija je **već primenjena** na Vule-still-test i koristi isti red frizera za potvrdu i objavu, uz nezavisno range-exclusion ograničenje protiv preklapanja. Javno zauzeće sadrži i `travel_gap_minutes`, bez identiteta ili kontakta. Dostupnost ostaje savetodavna; konačna transakcija proverava sva pravila. Stvarne paralelne provere su prošle u prethodnom nastavku, a završni customer/owner Chrome paket sada prolazi 12/12. Ne ponavljati migraciju; videti [stvarnu istoriju](DEPLOYMENT.md) i [rezultate](tests/RESULTS.md).

@@ -11,7 +11,12 @@ export async function POST(request: Request) {
     try { input = parseConfirmation(await readBookingBody(request)); } catch { return bookingError("INVALID_INPUT"); }
     if (!input) return bookingError("INVALID_INPUT");
     const db = await createClient();
-    const { data, error } = await db.rpc("confirm_reviewed_reservation", {
+    const { data, error } = "services" in input ? await db.rpc("confirm_services_reservation", {
+      p_request_key: input.request_key, p_location: input.location, p_services: input.services,
+      p_start: input.start, p_expected_revision: input.schedule_revision,
+      p_expected_items: input.expected_items, p_expected_duration: input.expected_duration,
+      ...(input.attendee_name ? { p_attendee: input.attendee_name } : {}),
+    }) : await db.rpc("confirm_reviewed_reservation", {
       p_request_key: input.request_key, p_location: input.location, p_service: input.service,
       p_start: input.start, p_expected_revision: input.schedule_revision,
       p_expected_name: input.expected_service_name, p_expected_duration: input.expected_duration,

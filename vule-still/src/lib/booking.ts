@@ -1,24 +1,55 @@
 // Request contract only. All authority, timing and availability checks live in SQL.
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-type ConfirmInput = { request_key: string; location: string; service: string; start: string; schedule_revision: number; expected_service_name: string; expected_duration: number; attendee_name: string | null };
+export type ServiceSnapshot = { service_id: string; service_name: string; duration_minutes: number };
+export type ServiceSelection = { service: string; expected_service_name: string; expected_duration: number }
+  | { services: string[]; expected_items: ServiceSnapshot[]; expected_duration: number };
+type ConfirmInput = ServiceSelection & { request_key: string; location: string; start: string; schedule_revision: number; attendee_name: string | null };
 type CancelInput = { request_key: string; reservation: string };
 const object = (value: unknown): Record<string, unknown> | null =>
   value !== null && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null;
 const isUuid = (value: unknown): value is string => typeof value === "string" && uuid.test(value);
 
+export function parseServiceIds(value: unknown): string[] | null {
+  if (!Array.isArray(value) || !value.length || !value.every(isUuid)) return null;
+  const ids = value.map(id => id.toLowerCase()).sort();
+  return new Set(ids).size === ids.length ? ids : null;
+}
+export function parseServiceSelection(value: Record<string, unknown>): ServiceSelection | null {
+  if (typeof value.expected_duration !== "number" || !Number.isSafeInteger(value.expected_duration)
+    || value.expected_duration <= 0 || value.expected_duration > 2147483647 || value.expected_duration % 10 !== 0) return null;
+  if ("services" in value) {
+    if ("service" in value || "expected_service_name" in value) return null;
+    const ids = parseServiceIds(value.services);
+    if (!ids || !Array.isArray(value.expected_items) || value.expected_items.length !== ids.length) return null;
+    const items: ServiceSnapshot[] = [];
+    for (const entry of value.expected_items) {
+      const item = object(entry);
+      if (!item || !isUuid(item.service_id) || typeof item.service_name !== "string" || !item.service_name.trim()
+        || typeof item.duration_minutes !== "number" || !Number.isSafeInteger(item.duration_minutes)
+        || item.duration_minutes <= 0 || item.duration_minutes % 10 !== 0) return null;
+      items.push({ service_id: item.service_id.toLowerCase(), service_name: item.service_name, duration_minutes: item.duration_minutes });
+    }
+    items.sort((a, b) => a.service_id.localeCompare(b.service_id));
+    if (items.some((item, i) => item.service_id !== ids[i]) || items.reduce((sum, item) => sum + item.duration_minutes, 0) !== value.expected_duration) return null;
+    return { services: ids, expected_items: items, expected_duration: value.expected_duration };
+  }
+  if (!isUuid(value.service) || "expected_items" in value || typeof value.expected_service_name !== "string" || !value.expected_service_name.trim()) return null;
+  return { service: value.service, expected_service_name: value.expected_service_name, expected_duration: value.expected_duration };
+}
+
 export function parseConfirmation(value: unknown): ConfirmInput | null {
   const v = object(value);
-  if (!v || !isUuid(v.request_key) || !isUuid(v.location) || !isUuid(v.service)
+  if (!v || !isUuid(v.request_key) || !isUuid(v.location)
     || typeof v.start !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00\.000Z$/.test(v.start)
     || !Number.isFinite(Date.parse(v.start)) || new Date(v.start).toISOString() !== v.start
     || typeof v.schedule_revision !== "number" || !Number.isSafeInteger(v.schedule_revision) || v.schedule_revision < 1
-    || typeof v.expected_service_name !== "string" || !v.expected_service_name.trim()
-    || typeof v.expected_duration !== "number" || !Number.isSafeInteger(v.expected_duration) || v.expected_duration <= 0 || v.expected_duration % 10 !== 0
     || (v.attendee_name !== undefined && v.attendee_name !== null && typeof v.attendee_name !== "string")) return null;
   const attendee = typeof v.attendee_name === "string" ? v.attendee_name.trim() : null;
   if (attendee !== null && (!attendee || [...attendee].length > 120)) return null;
-  return { request_key: v.request_key, location: v.location, service: v.service, start: v.start,
-    schedule_revision: v.schedule_revision, expected_service_name: v.expected_service_name, expected_duration: v.expected_duration, attendee_name: attendee };
+  const selection = parseServiceSelection(v);
+  if (!selection) return null;
+  return { request_key: v.request_key, location: v.location, ...selection, start: v.start,
+    schedule_revision: v.schedule_revision, attendee_name: attendee };
 }
 
 export function parseCancellation(value: unknown): CancelInput | null {

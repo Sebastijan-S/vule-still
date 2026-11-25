@@ -28,6 +28,8 @@ Svaka numerisana celina ima sopstvenu proveru i može da bude poseban commit. Ko
 
 ### 2. P0 — Jedan dolazak sa više usluga: podaci i pravila
 
+**Status 25.11.2026:** Implementirano i provereno na test projektu; UI izbor još nije uključen. Prošlo je 152 izolovanih SQL provera, 25 lokalnih testova i osam ciljanih Chrome testova, uključujući stvarne paralelne potvrde. Postojećih 47 rezervacija preneto je bez izmene izvornih vrednosti. Detalji i granice oporavka su u [zapisniku migracije](../vule-still/supabase/DEPLOYMENT.md), a sledeći je korak 3.
+
 **Problem.** Dodavanje kućica za izbor u sadašnjoj formi ostavilo bi računanje vremena i potvrdu vezane za samo jednu uslugu. Klijentu bi mogao biti ponuđen period prekratak za ceo dolazak.
 
 **Rezultat.** Jedna rezervacija pripada jednoj osobi, jednoj lokaciji i jednom frizeru. Ima jedan početak, jedan kraj, jedan status i jednu ili više različitih aktivnih usluga. Trajanja se sabiraju. „Klasično šišanje“ (20 min) i „Brada“ (10 min) zauzimaju neprekinutih 30 minuta. Svaka kataloška usluga može se izabrati jednom. „Šišanje i brada“ ostaje postojeća zasebna usluga od 30 minuta. Predloženo pravilo za prvu verziju je da se različite stavke računaju kako su označene, bez automatskog spajanja na osnovu naziva.

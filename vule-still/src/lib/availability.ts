@@ -7,7 +7,7 @@ type Shift = { date: string; location_id: string; start_minute: number; end_minu
 export type AvailabilityContext = {
   server_time: string;
   reason?: "outside_horizon" | "inactive_location" | "inactive_service";
-  service?: { minutes: number; active: boolean };
+  service?: { minutes: number; active: boolean; items?: { service_id: string; service_name: string; duration_minutes: number; position: number }[] };
   week?: { entries: Shift[]; travel_gap_minutes: number; revision: number } | null;
   occupied?: { start: string; end: string; location_id: string; travel_gap_minutes?: number }[];
 };
@@ -69,7 +69,8 @@ function subtract(periods: Interval[], blocks: Interval[]) {
 export function calculateAvailability(date: string, locationId: string, context: AvailabilityContext) {
   const now = Date.parse(context.server_time);
   if (!isCalendarDate(date) || !Number.isFinite(now)) throw new Error("Invalid availability context");
-  const base = { date, timezone: BUSINESS_ZONE, server_time: context.server_time, schedule_revision: context.week?.revision ?? null, duration_minutes: context.service?.minutes ?? null };
+  const base = { date, timezone: BUSINESS_ZONE, server_time: context.server_time, schedule_revision: context.week?.revision ?? null, duration_minutes: context.service?.minutes ?? null,
+    ...(context.service?.items ? { items: context.service.items } : {}) };
   const result = (reason: AvailabilityReason, slots: { start: string; end: string; local_start: string; utc_offset_minutes: number }[] = []) => ({ ...base, reason, slots });
   const today = parts(now).date;
   if (date < today || date > addCalendarDays(today, 14)) return result("outside_horizon");

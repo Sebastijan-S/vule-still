@@ -174,8 +174,8 @@ export type Database = {
       }
       locations: {
         Row: {
-          booking_enabled: boolean
           address: string | null
+          booking_enabled: boolean
           created_at: string
           id: string
           is_active: boolean
@@ -186,8 +186,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          booking_enabled?: boolean
           address?: string | null
+          booking_enabled?: boolean
           created_at?: string
           id?: string
           is_active?: boolean
@@ -198,8 +198,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          booking_enabled?: boolean
           address?: string | null
+          booking_enabled?: boolean
           created_at?: string
           id?: string
           is_active?: boolean
@@ -244,6 +244,45 @@ export type Database = {
         }
         Relationships: []
       }
+      reservation_items: {
+        Row: {
+          duration_minutes: number
+          position: number
+          reservation_id: string
+          service_id: string
+          service_name: string
+        }
+        Insert: {
+          duration_minutes: number
+          position: number
+          reservation_id: string
+          service_id: string
+          service_name: string
+        }
+        Update: {
+          duration_minutes?: number
+          position?: number
+          reservation_id?: string
+          service_id?: string
+          service_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservation_items_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservation_items_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reservations: {
         Row: {
           attendee_name: string
@@ -256,6 +295,7 @@ export type Database = {
           guest_phone: string | null
           id: string
           location_id: string
+          service_count: number
           service_id: string
           service_name: string
           staff_id: string
@@ -275,6 +315,7 @@ export type Database = {
           guest_phone?: string | null
           id?: string
           location_id: string
+          service_count?: number
           service_id: string
           service_name: string
           staff_id: string
@@ -294,6 +335,7 @@ export type Database = {
           guest_phone?: string | null
           id?: string
           location_id?: string
+          service_count?: number
           service_id?: string
           service_name?: string
           staff_id?: string
@@ -537,6 +579,19 @@ export type Database = {
         }
         Returns: Json
       }
+      confirm_services_reservation: {
+        Args: {
+          p_attendee?: string
+          p_expected_duration: number
+          p_expected_items: Json
+          p_expected_revision: number
+          p_location: string
+          p_request_key: string
+          p_services: string[]
+          p_start: string
+        }
+        Returns: Json
+      }
       ensure_session_access: { Args: never; Returns: boolean }
       get_my_appointments: { Args: never; Returns: Json }
       get_owner_reservations: {
@@ -563,6 +618,20 @@ export type Database = {
           p_phone?: string
           p_request_key: string
           p_service: string
+          p_start: string
+        }
+        Returns: Json
+      }
+      owner_create_services_reservation: {
+        Args: {
+          p_expected_duration: number
+          p_expected_items: Json
+          p_expected_revision: number
+          p_location: string
+          p_name: string
+          p_phone?: string
+          p_request_key: string
+          p_services: string[]
           p_start: string
         }
         Returns: Json
@@ -603,6 +672,10 @@ export type Database = {
           p_week: string
         }
         Returns: number
+      }
+      services_availability_context: {
+        Args: { p_date: string; p_location: string; p_services: string[] }
+        Returns: Json
       }
     }
     Enums: {

@@ -109,6 +109,8 @@ Supabase projekat je dostavljen i potvrđen kao nov i prazan: `usokysukvtgtvrtxn
 
 ## UI plan — 25.11.2026.
 
+Korak 2 uvodi stavke jednog dolaska sa pojedinačnim sačuvanim vrednostima, zbirom trajanja i redosledom po katalogu. Svaka usluga može biti označena jednom; različite stavke se sabiraju bez automatskog spajanja naziva. Jedna osoba, lokacija, početak/kraj, status i ključ zahteva važe za sve stavke. Novi API prihvata listu usluga i pregled svake stavke, dok raniji zahtevi sa jednom uslugom ostaju podržani. Pri nepoznatom ishodu isti ključ se razrešava pre čitanja trenutnog kataloga. UI izbor više usluga čeka korak 3.
+
 Prema [novom planu](PLAN-UI-I-VISE-USLUGA.md), korak 1 privremeno povlači tri postojeće premium usluge pomoću `services.is_active=false`. Ne brišu se niti menjaju njihovi ID-jevi, kategorije, nazivi ili trajanja. Nove javne i ručne rezervacije koriste samo aktivne usluge; istorija, pomeranje i redovno otkazivanje ranijih premium termina ostaju dostupni. Grupe bez stavki se skrivaju; povratak ponude koristi iste kataloške redove. Višestruki izbor ostaje za zasebne korake 2 i 3.
 
 ## Dodatne potvrđene odluke tokom pripreme baze
