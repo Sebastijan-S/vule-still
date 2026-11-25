@@ -1,20 +1,21 @@
 import { test, expect } from "@playwright/test";
 
-test.use({ baseURL: "http://127.0.0.1:3000" });
-
 test("catalogue has revised durations and only Neuzin can be booked", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator(".service-row").filter({ hasText: "Šišanje i brada" })).toContainText("30 min");
   await expect(page.locator(".service-row").filter({ hasText: /^\d+Brada/ })).toContainText("10 min");
-  await page.locator(".premium-list summary").click();
-  await expect(page.locator(".service-row").filter({ hasText: "Sređivanje brade sa toplim peškirom" })).toContainText("20 min");
-  await expect(page.locator(".service-row").filter({ hasText: "Sređivanje obrva britvom" })).toContainText("10 min");
+  await expect(page.locator(".service-row")).toHaveCount(4);
+  await expect(page.locator(".premium-list")).toHaveCount(0);
   const zr = page.locator(".location-card").filter({ hasText: "Zrenjanin" });
   await expect(zr).toContainText("Zrenjanin rezervacije uskoro");
   await expect(zr.getByRole("link")).toHaveCount(0);
   await page.goto("/rezervacija?lokacija=zrenjanin");
   await expect(page.getByRole("button", { name: /Neuzin/ })).toBeVisible();
   await expect(page.getByRole("button", { name: /Zrenjanin/ })).toHaveCount(0);
+  await page.getByRole("button", { name: "Neuzin", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Usluge", exact: true })).toBeVisible();
+  await expect(page.locator(".booking-options .booking-option")).toHaveCount(4);
+  await expect(page.getByText("Premium usluge", { exact: true })).toHaveCount(0);
 });
 
 test("guest entry has one contact field, no password/code, and validates invalid contact", async ({ page }) => {

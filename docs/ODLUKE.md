@@ -107,6 +107,10 @@ Ovo su konkretizacije za pregled, ne dodatni odgovori korisnika. Njihove izmene 
 
 Supabase projekat je dostavljen i potvrđen kao nov i prazan: `usokysukvtgtvrtxnjai`, namenjen budućoj produkciji. Početni administratorski mejl je `sekosansebastijan@gmail.com`. Domen, tačni javni kontakti i datum javnog puštanja još nisu dostavljeni. Za javnu aktivaciju potrebni su povezani servisi i provereno slanje kodova. Ostalo vlasništvo nad repozitorijumom, domenom i hostingom treba utvrditi pre kreiranja tih naloga.
 
+## UI plan — 25.11.2026.
+
+Prema [novom planu](PLAN-UI-I-VISE-USLUGA.md), korak 1 privremeno povlači tri postojeće premium usluge pomoću `services.is_active=false`. Ne brišu se niti menjaju njihovi ID-jevi, kategorije, nazivi ili trajanja. Nove javne i ručne rezervacije koriste samo aktivne usluge; istorija, pomeranje i redovno otkazivanje ranijih premium termina ostaju dostupni. Grupe bez stavki se skrivaju; povratak ponude koristi iste kataloške redove. Višestruki izbor ostaje za zasebne korake 2 i 3.
+
 ## Dodatne potvrđene odluke tokom pripreme baze
 
 Ovi odgovori imaju prednost nad ranijim neodređenim detaljima. P2 je sada izričito potvrđen.

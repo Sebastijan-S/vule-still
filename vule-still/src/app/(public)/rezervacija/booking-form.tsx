@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { addCalendarDays } from "@/lib/availability";
 import { dateLabel, timeLabel, offsetLabel, postBooking, type Appointment } from "@/lib/appointment-display";
@@ -11,7 +12,9 @@ type Availability = { reason: string; schedule_revision: number; server_time: st
 type Pending = { request_key: string; location: string; service: string; start: string; schedule_revision: number; expected_service_name: string; expected_duration: number; attendee_name: string | null };
 const messages: Record<string, string> = { unpublished: "Raspored još nije objavljen.", closed: "Ovaj dan je neradan.", fully_booked: "Svi odgovarajući termini su zauzeti.", insufficient_duration: "Nema dovoljno dugog slobodnog perioda za ovu uslugu.", cutoff: "Za danas više nema termina koji počinju najmanje 15 minuta unapred.", outside_horizon: "Izaberi datum u narednih 14 dana.", inactive_service: "Usluga više nije dostupna. Ponovo izaberi uslugu.", inactive_location: "Lokacija više nije dostupna. Ponovo izaberi lokaciju." };
 const draftKey = "vule-booking-selection";
+const withdrawnMessage = "Izabrana usluga trenutno nije u ponudi. Izaberi neku od dostupnih usluga.";
 export function BookingForm({ locations, services, user, today, initial }: { locations: Location[]; services: Service[]; user: User; today: string; initial: { location?: string; service?: string } }) {
+  const router = useRouter();
   const [location, setLocation] = useState(locations.find(l => l.slug === initial.location)?.id ?? "");
   const [service, setService] = useState(services.find(s => s.slug === initial.service)?.id ?? "");
   const [date, setDate] = useState(today), [start, setStart] = useState("");
@@ -20,6 +23,8 @@ export function BookingForm({ locations, services, user, today, initial }: { loc
   const [other, setOther] = useState(false), [attendee, setAttendee] = useState("");
   const [error, setError] = useState(""), [busy, setBusy] = useState(false), [pending, setPending] = useState<Pending | null>(null);
   const [success, setSuccess] = useState<Appointment | null>(null);
+  const [notice, setNotice] = useState("");
+  const groups = ["standard", "premium"].map(category => ({ category, items: services.filter(s => s.category === category) })).filter(group => group.items.length > 0);
   const panel = useRef<HTMLElement>(null);
   useEffect(() => { if (step > 0 || success) { const heading = panel.current?.querySelector("h2"); if (heading) { heading.tabIndex = -1; heading.focus(); } } }, [step, success]);
   const pendingKey = `vule-booking-pending:${user?.id ?? "anonymous"}`;
@@ -27,6 +32,7 @@ export function BookingForm({ locations, services, user, today, initial }: { loc
     Promise.resolve().then(() => {
       try {
         const saved = JSON.parse(sessionStorage.getItem(draftKey) ?? "null");
+        const withdrawn = initial.service ? !services.some(s => s.slug === initial.service) : saved?.service && !services.some(s => s.id === saved.service);
         if (saved) {
           if (!initial.location && locations.some(l => l.id === saved.location)) setLocation(saved.location);
           if (!initial.service && services.some(s => s.id === saved.service)) setService(saved.service);
@@ -35,11 +41,19 @@ export function BookingForm({ locations, services, user, today, initial }: { loc
             && (!initial.location || locations.find(l => l.slug === initial.location)?.id === saved.location)
             && (!initial.service || services.find(s => s.slug === initial.service)?.id === saved.service)) setStep(2);
         }
+        if (withdrawn) {
+          const restoredLocation = locations.find(l => l.slug === initial.location)?.id
+            ?? (!initial.location && locations.find(l => l.id === saved?.location)?.id)
+            ?? (locations.length === 1 ? locations[0].id : "");
+          setLocation(restoredLocation || ""); setService(""); setStart("");
+          setStep(restoredLocation ? 1 : 0); setNotice(withdrawnMessage);
+        }
         if (user) {
           const savedRequest = JSON.parse(sessionStorage.getItem(pendingKey) ?? "null");
           if (savedRequest?.request_key && savedRequest.location && savedRequest.service && savedRequest.start) {
             setPending(savedRequest); setLocation(savedRequest.location); setService(savedRequest.service); setDate(new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Belgrade" }).format(new Date(savedRequest.start))); setStart(savedRequest.start); setStep(3);
             setOther(!!savedRequest.attendee_name); setAttendee(savedRequest.attendee_name ?? "");
+            setNotice("");
           }
         }
       } catch { /* Storage may be unavailable; database idempotency still applies. */ }
@@ -53,14 +67,19 @@ export function BookingForm({ locations, services, user, today, initial }: { loc
     Promise.resolve().then(() => { setLoading(true); setAvailable(null); });
     fetch(`/api/availability?date=${date}&location=${location}&service=${service}`, { cache: "no-store", signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]) })
       .then(async response => { const body = await response.json(); if (!response.ok) throw new Error(body.error); return body as Availability; })
-      .then(data => { if (!controller.signal.aborted) { setAvailable(data); setStart(current => {
+      .then(data => { if (!controller.signal.aborted) {
+        if (data.reason === "inactive_service" && !pending) { setService(""); setStart(""); setStep(1); setNotice(withdrawnMessage); router.refresh(); return; }
+        setAvailable(data); setStart(current => {
         if (current && !pending && !data.slots.some(s => s.start === current)) { setError("Sačuvani termin više nije dostupan. Izaberi drugi; lokacija i usluga ostaju sačuvane."); return ""; } return current;
       }); } })
       .catch(cause => { if (!controller.signal.aborted) setError(cause.message || "Slobodni termini trenutno nisu dostupni."); })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
-  }, [date, location, service, ready, reload, pending]);
-  const selectedLocation = locations.find(l => l.id === location), selectedService = services.find(s => s.id === service);
+  }, [date, location, service, ready, reload, pending, router]);
+  // A pending mutation must retry its exact snapshot even after catalogue withdrawal.
+  const selectedLocation = locations.find(l => l.id === location), selectedService = pending
+    ? { id: pending.service, slug: "", name: pending.expected_service_name, duration_minutes: pending.expected_duration }
+    : services.find(s => s.id === service);
   const slot = available?.slots.find(s => s.start === start);
   const end = slot?.end ?? (start && selectedService ? new Date(Date.parse(start) + selectedService.duration_minutes * 60000).toISOString() : "");
   const returnTo = `/rezervacija?lokacija=${encodeURIComponent(selectedLocation?.slug ?? "")}&usluga=${encodeURIComponent(selectedService?.slug ?? "")}`;
@@ -77,6 +96,7 @@ export function BookingForm({ locations, services, user, today, initial }: { loc
         const response = await fetch(`/api/availability?date=${date}&location=${location}&service=${service}`, { cache: "no-store", signal: AbortSignal.timeout(15000) });
         const fresh = await response.json();
         if (!response.ok) throw new Error(fresh.error);
+        if (fresh.reason === "inactive_service") { setService(""); setStart(""); setStep(1); setNotice(withdrawnMessage); router.refresh(); return; }
         if (!fresh.slots.some((s: { start: string }) => s.start === start)) { setStart(""); setStep(2); setReload(n => n + 1); setError("Ovaj termin je upravo zauzet ili je raspored promenjen. Izaberi drugi slobodan termin."); return; }
         request = { request_key: crypto.randomUUID(), location, service, start, schedule_revision: fresh.schedule_revision, expected_service_name: selectedService.name, expected_duration: selectedService.duration_minutes, attendee_name: other ? attendee.trim() : null };
         setPending(request);
@@ -85,7 +105,11 @@ export function BookingForm({ locations, services, user, today, initial }: { loc
       const response = await postBooking("/api/reservations", request);
       if (!response.ok) {
         setError(response.error);
-        if (!response.retry_same_key) { clearPending(); if (response.status === 409) { setStart(""); setStep(2); setReload(n => n + 1); } }
+        if (!response.retry_same_key) {
+          clearPending();
+          if (response.error === messages.inactive_service) { setService(""); setStart(""); setStep(1); setNotice(withdrawnMessage); router.refresh(); }
+          else if (response.status === 409) { setStart(""); setStep(2); setReload(n => n + 1); }
+        }
         return;
       }
       setSuccess(response.reservation); clearPending();
@@ -98,9 +122,10 @@ export function BookingForm({ locations, services, user, today, initial }: { loc
     <ol className="booking-progress">{["Lokacija", "Usluga", "Termin", "Pregled"].map((label, i) => <li key={label}><button type="button" aria-current={step === i ? "step" : undefined} disabled={busy || !!pending || (i > 0 && !location) || (i > 1 && !service) || (i > 2 && !start)} onClick={() => { setStep(i); setError(""); }}>{i + 1}. {label}</button></li>)}</ol>
     <p className="field-help">Vreme u Srbiji · izbor nije rezervacija niti zauzeće termina.</p>
     {error && <p role="alert" className="form-error">{error}</p>}
+    {notice && <p role="status" className="booking-empty">{notice}</p>}
     {!ready ? <p role="status">Učitavamo sačuvani izbor…</p> : <>
       {step === 0 && <><h2>Izaberi lokaciju</h2><div className="booking-options">{locations.map(l => <button type="button" className="booking-option" aria-pressed={location === l.id} key={l.id} onClick={() => { if (location !== l.id) { setLocation(l.id); setStart(""); } setStep(1); setError(""); }}>{l.name}</button>)}</div></>}
-      {step === 1 && <><h2>Izaberi jednu uslugu</h2>{["standard", "premium"].map(category => <fieldset key={category}><legend>{category === "premium" ? "Premium usluge" : "Standardne usluge"}</legend><div className="booking-options">{services.filter(s => s.category === category).map(s => <button type="button" className="booking-option" aria-pressed={service === s.id} key={s.id} onClick={() => { if (service !== s.id) { setService(s.id); setStart(""); } setStep(2); setError(""); }}><strong>{s.name}</strong><span>{s.duration_minutes} min</span></button>)}</div></fieldset>)}</>}
+      {step === 1 && <><h2>{groups.length === 1 ? "Usluge" : "Izaberi jednu uslugu"}</h2>{groups.map(({ category, items }) => <fieldset key={category}><legend className={groups.length === 1 ? "sr-only" : undefined}>{groups.length === 1 ? "Usluge" : category === "premium" ? "Premium usluge" : "Standardne usluge"}</legend><div className="booking-options">{items.map(s => <button type="button" className="booking-option" aria-pressed={service === s.id} key={s.id} onClick={() => { if (service !== s.id) { setService(s.id); setStart(""); } setStep(2); setError(""); setNotice(""); }}><strong>{s.name}</strong><span>{s.duration_minutes} min</span></button>)}</div></fieldset>)}</>}
       {step === 2 && <><h2>Izaberi datum i vreme</h2><p>{selectedLocation?.name} · {selectedService?.name} · {selectedService?.duration_minutes} min</p><label className="booking-field">Datum<input type="date" min={today} max={addCalendarDays(today, 14)} value={date} onChange={e => { setDate(e.target.value); setStart(""); setError(""); }} /></label><button type="button" className="text-button" onClick={() => { setError(""); setReload(n => n + 1); }}>Osveži slobodne termine</button>
         {loading ? <p role="status">Proveravamo slobodne termine…</p> : available && !available.slots.length ? <p className="booking-empty">{messages[available.reason] ?? "Za ovaj izbor nema slobodnih termina."}</p> : <div className="slot-options" aria-label="Slobodni termini">{available?.slots.map(s => <button type="button" key={s.start} aria-pressed={start === s.start} onClick={() => { setStart(s.start); setError(""); }}>{s.local_start}<small>{offsetLabel(s.start)}</small></button>)}</div>}
         <button type="button" className="button" disabled={!start || loading} onClick={() => setStep(3)}>Pregled rezervacije</button></>}

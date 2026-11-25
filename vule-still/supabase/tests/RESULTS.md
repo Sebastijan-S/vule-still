@@ -1,5 +1,14 @@
 # Rezultat početnih SQL provera
 
+## UI korak 1 — 25. novembar 2026. (aktuelno)
+
+- **137 SQL provera PASS:** ceo paket, uključujući sedam novih grupa u `premium-withdrawal.test.mjs`. Izolovani PGlite i zamenske Auth sesije; nije provera stvarne konkurentnosti. Nove grupe pokrivaju četiri aktivne usluge za sve uloge, odbijanje svake povučene usluge kroz dostupnost, obe javne potvrde i vlasnički RPC, nepromenjene istorijske snimke, idempotentno ponavljanje postojećih ključeva, prikaz istorije, pomeranje/otkazivanje i vraćanje istih sedam redova u ponudu. Stari test preklapanja eksplicitno reaktivira premium stavke samo u svom izolovanom scenariju.
+- **24 lokalna testa PASS:** auth 6, dostupnost 14, rezervacije 4. **Lint i `build:test` PASS.** Next.js pri pokretanju i buildu prijavljuje postojeće sigurnosno upozorenje za instaliranu verziju; zavisnosti nisu menjane u ovom koraku. Prvo pokretanje/build zaustavljeni su podsetnikom, ponovljene komande završile su uspešno.
+- **7/7 ciljanih Google Chrome testova PASS:** šest novih testova i prilagođeni postojeći test kataloga. Provereni su svi stari premium linkovi na 390/1280 px, četiri opcije bez prazne grupe, vraćanje nacrta sa sačuvanim datumom/lokacijom i očišćenim početkom, četiri usluge u ručnom unosu i stvarni HTTP 409 za sve tri premium stavke na javnom i vlasničkom API-ju. Testovi odbijenih zahteva ne stvaraju rezervacije. Dva pending scenarija proveravaju tačan sačuvan payload i završetak/oporavak simuliranim HTTP odgovorima, bez stvarne potvrde. Stvarna SQL idempotentnost proverena je odvojeno u izolovanoj bazi. Ceo stariji browser paket nije ponavljan.
+- Read-only Data API provera **PASS:** četiri javno vidljive usluge, privatne tabele i interna šema i dalje nedostupne anonimnom korisniku. Svih 47 cloud rezervacija ima isti fingerprint pre i posle migracije; videti [zapisnik primene](../DEPLOYMENT.md). Produkcija nije menjana, commit/push nisu izvršeni.
+
+Razvojni server ostavljen je na **http://127.0.0.1:3100** za korisničku proveru. Izbor više usluga nije uključen; slede koraci 2 i 3 UI plana.
+
 ## Zaseban administratorski interfejs — 3. novembar 2026. (najnovije)
 
 Ovaj zapis ima prednost nad starijim statusima ispod. Faza 10 je tokom izrade zasebnog interfejsa vođena kao **In progress**; nakon provera je **Ready for review**, bez korisničkog prihvatanja. Samo Vule-still-test (`xfbjgxtgvlyndonhlupm`). Ranijih **115 SQL / 23 lokalne / 12 Chrome** i prethodnih 7 stvarnih booking integracionih grupa ostaju istorijski dokazi; nisu obrisani ili preimenovani u nove rezultate.

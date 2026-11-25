@@ -1,5 +1,11 @@
 # Primenjeni početni Supabase paket
 
+## Povlačenje premium ponude — 25.11.2026. (aktuelno)
+
+Samo Vule-still-test (`xfbjgxtgvlyndonhlupm`). Lokalni izvor [20261125131831_withdraw_premium_services.sql](migrations/20261125131831_withdraw_premium_services.sql) primenjen je kao cloud verzija `20261125132151`, naziv `withdraw_premium_services`. Menja isključivo `is_active=false` na tri postojeća premium reda, izabrana kategorijom i postojećim slugovima. Pre primene pregledan je katalog i uspešno izvršena izolovana provera povlačenja, istorije i vraćanja istih usluga. Posle primene: četiri aktivne standardne usluge, tri neaktivne premium; ID-jevi, kategorije, nazivi i trajanja su očuvani. Nema promene šeme, RPC-ova, RLS ili Auth podešavanja.
+
+Svih **47 rezervacija** ostalo je neizmenjeno: fingerprint svih kolona pre i posle `597ecb5f80918e4809deca9c5094e358`. Nije bilo cloud premium rezervacija za istorijski scenario; on je proveren u izolovanoj bazi sa potvrđenim i otkazanim primerima. Povratak ponude radi reaktiviranjem istih redova, bez brisanja/ponovnog kreiranja i bez promene UI koda; reaktivacija je proverena samo u izolovanom testu. Produkcija nije menjana. Detalji provera: [RESULTS.md](tests/RESULTS.md).
+
 ## Zasebna administracija i šablon — 3.11.2026. (najnovije)
 
 Samo **Vule-still-test** (`xfbjgxtgvlyndonhlupm`, PostgreSQL 17.11.0.011). Prvo su pregledani stvarni objekti i istorija; četiri prethodne migracije nisu ponovljene. Dve nove migracije primenjene su jednom:

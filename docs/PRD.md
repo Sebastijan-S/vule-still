@@ -1,5 +1,7 @@
 # Vule Still — PRD
 
+**Ažuriranje 25.11.2026, UI korak 1:** Tri postojeće premium usluge privremeno su neaktivne. Za novo javno i ručno zakazivanje nude se četiri standardne usluge. Premium redovi i istorijski termini zadržavaju ID, naziv i trajanje; redovno upravljanje postojećim terminima ostaje dostupno. Prazne grupe se ne prikazuju. Stari link ili sačuvan izbor povučene usluge vraća na dostupne usluge uz objašnjenje. Zahtev nepoznatog ishoda prvo se proverava istim ključem. Izbor više usluga iz [novog UI plana](PLAN-UI-I-VISE-USLUGA.md) čeka korake 2 i 3; trenutni unos i dalje bira jednu uslugu.
+
 **Ažuriranje 14.11.2026:** Za aktuelnu prijavu bez potvrda, nova trajanja i zakazivanje samo za Neuzin važe [naknadno potvrđene izmene](IZMENE-2026-11-14.md), koje imaju prednost nad ranijim opisima u ovom dokumentu.
 
 Verzija 1.0 • 31.10.2026. • Specifikacija za pregled pre izrade.
