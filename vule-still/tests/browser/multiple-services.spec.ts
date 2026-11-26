@@ -86,7 +86,7 @@ test("multi-service API races, exact-key retry, saved item views, movement and s
     await expect(ownerCard.locator(".visit-services")).toContainText("Ukupno trajanje: 30 min");
     await ownerCard.getByRole("button",{name:"Izmeni termin",exact:true}).click();
     await expect(ownerPage.locator(".owner-form .visit-services")).toContainText("Brada · 10 min");
-    await ownerPage.locator(".owner-form .slot-options").getByRole("button",{name:/^17:00/}).click();
+    await ownerPage.locator(".owner-form .slot-options").getByRole("radio",{name:/^17:00/}).click();
     await ownerPage.getByRole("button",{name:"Sačuvaj izmenu",exact:true}).click();
     await expect(ownerPage.locator(".form-success")).toHaveText("Izmena je sačuvana.");
     await expect(ownerCard).toContainText("17:00–17:30");
@@ -103,7 +103,7 @@ test("multi-service API races, exact-key retry, saved item views, movement and s
     for(const row of (await rpc("get_owner_reservations",{p_from:date,p_to:date})).reservations.filter((r:{attendee_name:string;status:string})=>r.attendee_name.startsWith(tag)&&r.status==="confirmed")) await rpc("owner_cancel_reservation",{p_request_key:randomUUID(),p_reservation:row.id});
     await page.goto("/rezervacija?lokacija=neuzin&usluga=brada");
     await page.getByLabel("Datum",{exact:true}).fill(date);
-    await page.locator(".slot-options button").first().click();await page.getByRole("button",{name:"Pregled rezervacije",exact:true}).click();
+    await page.locator(".slot-options input[type=radio]").first().click();await page.getByRole("button",{name:"Pregled rezervacije",exact:true}).click();
     await page.getByLabel("Druga osoba",{exact:true}).check();await page.getByLabel("Ime osobe koja dolazi",{exact:true}).fill(`${tag} legacy`);
     await page.getByRole("button",{name:"Potvrdi rezervaciju",exact:true}).click();
     await expect(page.getByText("REZERVACIJA JE POTVRĐENA",{exact:true})).toBeVisible();

@@ -12,6 +12,8 @@ Administratorsko zaglavlje ima tri odeljka, bez javnih sekcija sajta:
 
 ## Ručni klijent, pomeranje i otkazivanje
 
+Izbor usluga možeš menjati tastaturom pomoću Tab i Space. Za slobodna vremena koristi Tab do radio grupe, pa strelice i Space; bira se jedan početak za ceo dolazak. Fokus je jasno označen, a destruktivne akcije imaju zaseban izgled. U dijalogu smene Tab/Shift+Tab ostaju među njegovim kontrolama; Escape ili „Zatvori“ vraćaju fokus na otvarač. Greška navodi pogođena polja i usmerava fokus na njih.
+
 Od koraka 3 i forma za novi ručni unos bira više usluga. Označi jednu ili više kućica i proveri pojedinačna trajanja i zbir minuta. Sve usluge pripadaju jednoj osobi koja dolazi. Kartica prikazuje sve sačuvane stavke, a pomeranje koristi njihov prvobitni zbir. Izmena vremena i otkazivanje važe za ceo dolazak. Za promenu sastava otkaži termin i napravi novi.
 
 Od 25.11.2026. za novo zakazivanje dostupne su četiri standardne usluge. Tri premium usluge su privremeno povučene, a ranije potvrđeni premium termini ostaju u pregledu sa sačuvanim nazivom i trajanjem. Mogu se pomerati i redovno otkazivati po istim pravilima. Povlačenje usluge ne otkazuje postojeći termin.

@@ -33,23 +33,23 @@ for (const width of [360,390,1280]) test(`multi selection, zero selection, retai
   await expect(page.getByRole("button",{name:"Izaberi vreme",exact:true})).toBeDisabled();
   await page.getByRole("checkbox",{name:"Brada 10 min",exact:true}).check();
   await page.getByRole("button",{name:"Izaberi vreme",exact:true}).click();
-  await page.locator(".slot-options button").last().click();
+  await page.locator(".slot-options input[type=radio]").last().click();
   await page.getByRole("button",{name:"Dodaj ili promeni usluge",exact:true}).click();
   await page.getByRole("checkbox",{name:"Klasično šišanje 20 min",exact:true}).check();
   await page.getByRole("button",{name:"Izaberi vreme",exact:true}).click();
   await expect(page.getByText("Ukupno trajanje: 30 min",{exact:true})).toBeVisible();
-  await expect(page.locator('.slot-options [aria-pressed="true"]')).toHaveCount(0);
+  await expect(page.locator('.slot-options input:checked')).toHaveCount(0);
   await expect(page.getByRole("button",{name:"Pregled rezervacije",exact:true})).toBeDisabled();
-  await page.locator(".slot-options button").first().click();
+  await page.locator(".slot-options input[type=radio]").first().click();
   await expect(page.getByText(/Izbor:.*16:00–16:30/)).toBeVisible();
   await page.getByRole("button",{name:"Dodaj ili promeni usluge",exact:true}).click();
   await page.getByRole("checkbox",{name:"Brada 10 min",exact:true}).uncheck();
   await page.getByRole("button",{name:"Izaberi vreme",exact:true}).click();
-  await expect(page.locator('.slot-options [aria-pressed="true"]')).toHaveCount(1);
+  await expect(page.locator('.slot-options input:checked')).toHaveCount(1);
   await page.getByRole("button",{name:"Dodaj ili promeni usluge",exact:true}).click();
   await page.getByRole("checkbox",{name:"Brada 10 min",exact:true}).check();
   await page.getByRole("button",{name:"Izaberi vreme",exact:true}).click();
-  await expect(page.locator('.slot-options [aria-pressed="true"]')).toHaveCount(1);
+  await expect(page.locator('.slot-options input:checked')).toHaveCount(1);
   await page.getByRole("button",{name:"Pregled rezervacije",exact:true}).click(); await page.reload();
   await expect(page.getByRole("heading",{name:"Proveri svoj izbor",exact:true})).toBeVisible();
   await expect(page.getByRole("list",{name:"Izabrane usluge",exact:true}).getByRole("listitem")).toHaveCount(2);
@@ -90,7 +90,7 @@ for (const link of ["/rezervacija", "/rezervacija?lokacija=neuzin&usluga=brada"]
   await mockTimes(page); await page.goto("/rezervacija"); await expect(page.getByRole("heading",{name:"Usluge",exact:true})).toBeVisible();
   await page.evaluate(({location,service,date})=>sessionStorage.setItem("vule-booking-selection",JSON.stringify({location,service,date,start:`${date}T15:00:00.000Z`})),{location,service:beard,date:today()});
   await page.goto(link); await expect(page.getByRole("heading",{name:"Izaberi datum i vreme",exact:true})).toBeVisible();
-  await expect(page.locator('.slot-options [aria-pressed="true"]')).toHaveCount(1);
+  await expect(page.locator('.slot-options input:checked')).toHaveCount(1);
 });
 for(const legacy of [false,true]) for(const outcome of ["confirmed","rejected"]) test(`pending exact saved payload with withdrawn item, legacy=${legacy}, outcome=${outcome}`,async({page})=>{
   const fixture=JSON.parse(await readFile(".env.phase6-state.local","utf8")).customer;

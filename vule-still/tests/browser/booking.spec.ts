@@ -14,8 +14,8 @@ for (const width of [360, 390, 1280]) test(`public booking at ${width}px keeps a
   await page.getByRole("button", { name: "Zrenjanin", exact: true }).click();
   await page.getByRole("button", { name: /Klasično šišanje/ }).click();
   await page.getByLabel("Datum", { exact: true }).fill(nextDay());
-  await expect(page.locator(".slot-options button").first()).toBeVisible();
-  await page.locator(".slot-options button").first().click();
+  await expect(page.locator(".slot-options input[type=radio]").first()).toBeVisible();
+  await page.locator(".slot-options input[type=radio]").first().click();
   await page.getByRole("button", { name: "Pregled rezervacije", exact: true }).click();
   await expect(page.getByRole("link", { name: "Prijavi se i nastavi" })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
@@ -28,9 +28,9 @@ test("anonymous selection survives signup/profile/refresh; lost response retry, 
   await page.getByRole("button", { name: "Zrenjanin", exact: true }).click();
   await page.getByRole("button", { name: /Klasično šišanje/ }).click();
   await page.getByLabel("Datum", { exact: true }).fill(nextDay());
-  await expect(page.locator(".slot-options button").first()).toBeVisible();
-  const time = await page.locator(".slot-options button").first().textContent() ?? "";
-  await page.locator(".slot-options button").first().click();
+  await expect(page.locator(".slot-options input[type=radio]").first()).toBeVisible();
+  const time = await page.locator(".slot-options input[type=radio]").first().getAttribute("aria-label") ?? "";
+  await page.locator(".slot-options input[type=radio]").first().click();
   await page.getByRole("button", { name: "Pregled rezervacije", exact: true }).click();
   await page.getByRole("link", { name: "Prijavi se i nastavi" }).click();
   await page.getByLabel("Imejl adresa").fill(email); await page.getByLabel("Lozinka", { exact: true }).fill(password);
@@ -40,9 +40,9 @@ test("anonymous selection survives signup/profile/refresh; lost response retry, 
   await page.getByRole("button", { name: "Sačuvaj podatke", exact: true }).click();
   await page.waitForURL(url => url.pathname === "/rezervacija");
   await expect(page.getByLabel("Datum", { exact: true })).toHaveValue(nextDay());
-  await expect(page.locator('.slot-options button[aria-pressed="true"]')).toHaveText(time);
+  await expect(page.locator('.slot-options input:checked')).toHaveAttribute("aria-label", time);
   await page.reload();
-  await expect(page.locator('.slot-options button[aria-pressed="true"]')).toHaveText(time);
+  await expect(page.locator('.slot-options input:checked')).toHaveAttribute("aria-label", time);
   await page.getByRole("button", { name: "Pregled rezervacije", exact: true }).click();
   await page.getByLabel("Druga osoba", { exact: true }).check(); await page.getByLabel("Ime osobe koja dolazi", { exact: true }).fill(person);
   await expect(page.locator(".appointment-facts")).toContainText(email);

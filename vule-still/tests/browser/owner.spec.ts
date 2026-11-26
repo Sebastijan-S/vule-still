@@ -25,8 +25,8 @@ test("owner manual booking/edit/cancel and conflicting schedule publication; ord
   try {
     await page.getByRole("button", { name: "Dodaj ručni termin", exact: true }).click();
     await page.getByLabel("Ime osobe koja dolazi", { exact: true }).fill(tag);
-    await expect(page.locator(".owner-form .slot-options button").first()).toBeVisible();
-    await page.locator(".owner-form .slot-options button").first().click();
+    await expect(page.locator(".owner-form .slot-options input[type=radio]").first()).toBeVisible();
+    await page.locator(".owner-form .slot-options input[type=radio]").first().click();
     for (const width of [360, 390, 1280]) {
       await page.setViewportSize({ width, height: 900 }); expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       await page.screenshot({ path: `test-results/owner-${width}.png`, fullPage: true });
@@ -35,14 +35,14 @@ test("owner manual booking/edit/cancel and conflicting schedule publication; ord
     let made = (await ownerRows()).find((r: { attendee_name: string; status: string }) => r.attendee_name === tag && r.status === "confirmed"); expect(made.user_id).toBeNull(); expect(made.phone).toBeNull();
     const card = page.locator(`[data-reservation="${made.id}"]`); await card.getByText("Detalji i kontakt", { exact: true }).click(); await expect(card).toContainText("Ručni gost — nema naloga ni obaveštenja u aplikaciji.");
     await card.getByRole("button", { name: "Izmeni termin", exact: true }).click(); await page.getByLabel("Telefon gosta (opciono)").fill("0641234567");
-    await expect(page.locator(".owner-form .slot-options button").nth(1)).toBeVisible(); await page.locator(".owner-form .slot-options button").nth(1).click(); await page.getByRole("button", { name: "Sačuvaj izmenu", exact: true }).click(); await expect(page.locator(".form-success")).toHaveText("Izmena je sačuvana.");
+    await expect(page.locator(".owner-form .slot-options input[type=radio]").nth(1)).toBeVisible(); await page.locator(".owner-form .slot-options input[type=radio]").nth(1).click(); await page.getByRole("button", { name: "Sačuvaj izmenu", exact: true }).click(); await expect(page.locator(".form-success")).toHaveText("Izmena je sačuvana.");
     made = (await ownerRows()).find((r: { id: string }) => r.id === made.id); expect(made.version).toBe(2); expect(made.duration_minutes).toBe(20); expect(made.phone).toBe("+381641234567");
     page.once("dialog", d => d.accept()); await card.getByRole("button", { name: "Otkaži termin", exact: true }).click(); await expect(card).toContainText("Otkazana");
     console.log("Owner E2E: create, edit and regular cancellation passed");
     const locationFilter = page.getByRole("combobox", { name: "Filter lokacije", exact: true });
     await locationFilter.selectOption({ label: "Neuzin" }); await expect(card).toHaveCount(0); await locationFilter.selectOption({ label: "Obe lokacije" });
     console.log("Owner E2E: location filters passed");
-    await page.getByRole("button", { name: "Dodaj ručni termin", exact: true }).click(); await page.getByLabel("Ime osobe koja dolazi", { exact: true }).fill(`${tag} schedule`); await expect(page.locator(".owner-form .slot-options button").first()).toBeVisible(); await page.locator(".owner-form .slot-options button").first().click(); await page.getByRole("button", { name: "Potvrdi ručni termin", exact: true }).click(); await expect(page.locator(".form-success")).toContainText("Ručni termin je potvrđen");
+    await page.getByRole("button", { name: "Dodaj ručni termin", exact: true }).click(); await page.getByLabel("Ime osobe koja dolazi", { exact: true }).fill(`${tag} schedule`); await expect(page.locator(".owner-form .slot-options input[type=radio]").first()).toBeVisible(); await page.locator(".owner-form .slot-options input[type=radio]").first().click(); await page.getByRole("button", { name: "Potvrdi ručni termin", exact: true }).click(); await expect(page.locator(".form-success")).toContainText("Ručni termin je potvrđen");
     const protectedRow = (await ownerRows()).find((r: { attendee_name: string; status: string }) => r.attendee_name === `${tag} schedule` && r.status === "confirmed"); expect(protectedRow).toBeTruthy();
     await page.goto("/raspored"); await page.getByLabel("Izaberi nedelju").fill(week);
     const label = ["Nedelja", "Ponedeljak", "Utorak", "Sreda", "Četvrtak", "Petak", "Subota"][day.getUTCDay()];

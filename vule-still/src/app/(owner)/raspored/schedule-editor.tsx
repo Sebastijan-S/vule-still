@@ -33,33 +33,45 @@ export function ShiftDialog({ editing, location, dayLabel, onApply, onRemove, on
   const dialog = useRef<HTMLDialogElement>(null);
   const [shift, setShift] = useState(() => structuredClone(editing.shift));
   const [error, setError] = useState("");
+  const [invalid, setInvalid] = useState<"shift" | "breaks" | null>(null);
+  const shiftEnd = useRef<HTMLInputElement>(null);
+  const firstBreak = useRef<HTMLInputElement>(null);
+  // Native modal handling makes the rest of the page inert and restores the opener.
   useEffect(() => { dialog.current?.showModal(); }, []);
   function close() { dialog.current?.close(); onClose(); }
+  function containFocus(event: React.KeyboardEvent<HTMLDialogElement>) {
+    if (event.key !== "Tab") return;
+    const controls = Array.from(event.currentTarget.querySelectorAll<HTMLElement>("button:enabled, input:enabled, select:enabled, textarea:enabled, a[href], [tabindex]"))
+      .filter(element => element.tabIndex >= 0 && element.getClientRects().length > 0);
+    const first = controls[0], last = controls.at(-1);
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+  }
   function apply(event: React.FormEvent) {
     event.preventDefault();
     const breaks = [...shift.breaks].sort((a, b) => a.start_minute - b.start_minute);
     let previousEnd = shift.start_minute;
     if (!(shift.start_minute >= 0 && shift.end_minute <= 1440 && shift.end_minute > shift.start_minute)) {
-      setError("Kraj smene mora biti posle početka, u istom danu."); return;
+      setInvalid("shift"); setError("Kraj smene mora biti posle početka, u istom danu."); shiftEnd.current?.focus(); return;
     }
     for (const pause of breaks) {
       if (!(pause.start_minute >= previousEnd && pause.end_minute > pause.start_minute && pause.end_minute <= shift.end_minute)) {
-        setError("Pauze moraju biti unutar smene i bez međusobnog preklapanja."); return;
+        setInvalid("breaks"); setError("Pauze moraju biti unutar smene i bez međusobnog preklapanja."); firstBreak.current?.focus(); return;
       }
       previousEnd = pause.end_minute;
     }
     dialog.current?.close();
     onApply({ ...shift, breaks });
   }
-  return <dialog ref={dialog} className="shift-dialog" aria-labelledby="shift-title" onCancel={event => { event.preventDefault(); close(); }} onClose={onClose}>
+  return <dialog ref={dialog} className="shift-dialog" aria-labelledby="shift-title" onKeyDown={containFocus} onCancel={event => { event.preventDefault(); close(); }} onClose={onClose}>
     <form onSubmit={apply}>
       <div className="shift-dialog-heading"><div><p className="eyebrow">{location}</p><h2 id="shift-title">{editing.index === null ? "Nova smena" : "Izmeni smenu"}</h2><p className="muted">{dayLabel ?? dateLabel(shift.date)}</p></div><button type="button" className="calendar-icon-button" aria-label="Zatvori izmenu smene" onClick={close}>×</button></div>
-      <div className="shift-time-fields"><label>Početak smene<input type="time" required value={toTime(shift.start_minute)} onChange={e => setShift({ ...shift, start_minute: fromTime(e.target.value) })} /></label><label>Kraj smene<input type="time" required value={toTime(shift.end_minute % 1440)} onChange={e => setShift({ ...shift, end_minute: fromTime(e.target.value) || 1440 })} /></label></div>
+      <div className="shift-time-fields"><label>Početak smene<input type="time" required aria-invalid={invalid === "shift"} aria-describedby={invalid === "shift" ? "shift-error" : undefined} value={toTime(shift.start_minute)} onChange={e => { setInvalid(null); setError(""); setShift({ ...shift, start_minute: fromTime(e.target.value) }); }} /></label><label>Kraj smene<input ref={shiftEnd} type="time" required aria-invalid={invalid === "shift"} aria-describedby={invalid === "shift" ? "shift-error" : undefined} value={toTime(shift.end_minute % 1440)} onChange={e => { setInvalid(null); setError(""); setShift({ ...shift, end_minute: fromTime(e.target.value) || 1440 }); }} /></label></div>
       <p className="field-help">Kraj u 00:00 označava ponoć na kraju izabranog dana.</p>
       <div className="shift-break-heading"><h3>Pauze</h3><button type="button" className="text-button" disabled={shift.breaks.length >= 12} onClick={() => setShift({ ...shift, breaks: [...shift.breaks, { start_minute: shift.start_minute + 60, end_minute: shift.start_minute + 80 }] })}>+ Dodaj pauzu</button></div>
       {!shift.breaks.length && <p className="muted">Nema pauza u ovoj smeni.</p>}
-      {shift.breaks.map((pause, index) => <div className="shift-break-fields" key={index}><label>Pauza {index + 1} od<input type="time" required value={toTime(pause.start_minute)} onChange={e => setShift({ ...shift, breaks: shift.breaks.map((b, i) => i === index ? { ...b, start_minute: fromTime(e.target.value) } : b) })} /></label><label>Pauza {index + 1} do<input type="time" required value={toTime(pause.end_minute % 1440)} onChange={e => setShift({ ...shift, breaks: shift.breaks.map((b, i) => i === index ? { ...b, end_minute: fromTime(e.target.value) || 1440 } : b) })} /></label><button type="button" className="calendar-icon-button" aria-label={`Ukloni pauzu ${index + 1}`} onClick={() => setShift({ ...shift, breaks: shift.breaks.filter((_, i) => i !== index) })}>×</button></div>)}
-      {error && <p className="form-error" role="alert">{error}</p>}
+      {shift.breaks.map((pause, index) => <div className="shift-break-fields" key={index}><label>Pauza {index + 1} od<input ref={index === 0 ? firstBreak : undefined} type="time" required aria-invalid={invalid === "breaks"} aria-describedby={invalid === "breaks" ? "shift-error" : undefined} value={toTime(pause.start_minute)} onChange={e => setShift({ ...shift, breaks: shift.breaks.map((b, i) => i === index ? { ...b, start_minute: fromTime(e.target.value) } : b) })} /></label><label>Pauza {index + 1} do<input type="time" required aria-invalid={invalid === "breaks"} aria-describedby={invalid === "breaks" ? "shift-error" : undefined} value={toTime(pause.end_minute % 1440)} onChange={e => setShift({ ...shift, breaks: shift.breaks.map((b, i) => i === index ? { ...b, end_minute: fromTime(e.target.value) || 1440 } : b) })} /></label><button type="button" className="calendar-icon-button" aria-label={`Ukloni pauzu ${index + 1}`} onClick={() => setShift({ ...shift, breaks: shift.breaks.filter((_, i) => i !== index) })}>×</button></div>)}
+      {error && <p id="shift-error" className="form-error" role="alert">{error}</p>}
       <div className="shift-dialog-actions">{editing.index !== null && <button type="button" className="text-button danger-text" onClick={() => { dialog.current?.close(); onRemove(); }}>Ukloni smenu</button>}<button type="button" className="text-button" onClick={close}>Odustani</button><button className="button" type="submit">Primeni u nacrtu</button></div>
     </form>
   </dialog>;

@@ -34,7 +34,7 @@ test("controlled full multi-service visit through guest/profile/refresh, lost re
     await page.getByRole("button",{name:"Dodaj ili promeni usluge",exact:true}).click();
     await page.getByRole("checkbox",{name:"Klasično šišanje 20 min",exact:true}).check();
     await page.getByRole("button",{name:"Izaberi vreme",exact:true}).click();await page.getByLabel("Datum",{exact:true}).fill(date);
-    await page.locator(".slot-options").getByRole("button",{name:/^16:00/}).click();
+    await page.locator(".slot-options").getByRole("radio",{name:/^16:00/}).click();
     await expect(page.getByText(/Izbor:.*16:00–16:30/)).toBeVisible();
     await page.getByRole("button",{name:"Pregled rezervacije",exact:true}).click();
     await page.getByRole("link",{name:"Prijavi se i nastavi",exact:true}).click();
@@ -72,7 +72,7 @@ test("controlled full multi-service visit through guest/profile/refresh, lost re
     const form=ownerPage.locator(".owner-form");await expect(form.getByRole("button",{name:"Potvrdi ručni termin",exact:true})).toBeDisabled();
     await form.getByRole("checkbox",{name:"Klasično šišanje 20 min",exact:true}).check();await form.getByRole("checkbox",{name:"Brada 10 min",exact:true}).check();
     await expect(form.getByText("Ukupno trajanje: 30 min",{exact:true})).toBeVisible();
-    await form.locator(".slot-options").getByRole("button",{name:/^17:00/}).click();await expect(form.getByText(/Izbor:.*17:00–17:30/)).toBeVisible();
+    await form.locator(".slot-options").getByRole("radio",{name:/^17:00/}).click();await expect(form.getByText(/Izbor:.*17:00–17:30/)).toBeVisible();
     for(const width of [390,1280]){await ownerPage.setViewportSize({width,height:900});expect(await ownerPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await form.screenshot({path:`test-results/ui3-owner-form-${width}.png`});}
     await form.getByRole("button",{name:"Potvrdi ručni termin",exact:true}).click();await expect(ownerPage.locator(".form-success")).toContainText("Ručni termin je potvrđen");
     const manual=(await rpc("get_owner_reservations",{p_from:date,p_to:date})).reservations.find((r:{attendee_name:string})=>r.attendee_name===`${tag} manual`);
@@ -80,7 +80,7 @@ test("controlled full multi-service visit through guest/profile/refresh, lost re
     const manualCard=ownerPage.locator(`[data-reservation="${manual.id}"]`);await expect(manualCard).toContainText("17:00–17:30");
     await manualCard.getByRole("button",{name:"Izmeni termin",exact:true}).click();
     await expect(form.getByRole("checkbox")).toHaveCount(0);await expect(form.locator(".visit-services")).toContainText("Ukupno trajanje: 30 min");
-    await form.locator(".slot-options").getByRole("button",{name:/^17:30/}).click();await form.getByRole("button",{name:"Sačuvaj izmenu",exact:true}).click();
+    await form.locator(".slot-options").getByRole("radio",{name:/^17:30/}).click();await form.getByRole("button",{name:"Sačuvaj izmenu",exact:true}).click();
     await expect(manualCard).toContainText("17:30–18:00");
     page.once("dialog",dialog=>dialog.accept());await card.getByRole("button",{name:"Otkaži rezervaciju",exact:true}).click();await expect(card).toContainText("Otkazana");
     ownerPage.once("dialog",dialog=>dialog.accept());await manualCard.getByRole("button",{name:"Otkaži termin",exact:true}).click();await expect(manualCard).toContainText("Otkazana");

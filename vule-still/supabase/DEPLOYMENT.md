@@ -1,5 +1,11 @@
 # Primenjeni početni Supabase paket
 
+## UI korak 4 — 25.11.2026.
+
+Korak 3 pushovan je kao `30e0cdf` na `phase/07-booking`; izmene koraka 4 ostaju lokalno za pregled. **Nema migracije, API/RPC izmene, promene zavisnosti, Auth podešavanja ili produkcione primene.** Pristupačniji izbor vremena koristi isti ugovor i intervale.
+
+Posle ponovljenog stvarnog toka na Vule-still-test: svih **56 zatečenih rezervacija** ima isti fingerprint `d32270a772fec790a8782d1785c9d7c4`; dva nova sintetička dolaska su otkazana, istorija/stavke ostaju. Ukupno 58, dve ranije potvrđene i **0 novih aktivnih**. Kontrolisana nedelja `2026-11-23` vraćena je u odsutno stanje tek po tačnoj proveri sadržaja/revizija/razmaka i odsustva potvrđenih termina. Ranije nedelje nisu menjane. [Rezultati i granice asistivne provere](tests/RESULTS.md).
+
 ## UI korak 3 — 25.11.2026.
 
 Ovaj korak menja samo aplikacioni izbor i prikaz; **nema nove migracije niti produkcione primene**. Koristi postojeći ugovor za više usluga iz koraka 2. Testiranje je ograničeno na Vule-still-test (`xfbjgxtgvlyndonhlupm`), bez Auth/SMTP promena.

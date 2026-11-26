@@ -66,6 +66,10 @@ Svaka numerisana celina ima sopstvenu proveru i može da bude poseban commit. Ko
 
 ### 4. P1 — Čitljivost, pristupačnost i tamna tema
 
+**Korisničko odobrenje 26.11.2026:** Korak 4 odobren je za commit i normalni push na `phase/07-booking`, uz evidentiranu granicu govorne provere čitača ekrana. Sledeći implementacioni rad je korak 5 u novom chatu.
+
+**Status 25.11.2026:** Implementirano za korisnički pregled posle push-a koraka 3 (`30e0cdf`). Osnovni tekst/unosi su 16 px, pomoćni tekst i akcije najmanje 14 px. Primarna dugmad imaju tamniju crvenu, jasni su fokus i destruktivne akcije. Vreme koristi nativnu radio grupu u javnom i ručnom unosu. Greške su povezane sa kontaktom, imenom osobe i vremenima smene; dijalog kruži Tab fokus i vraća ga na otvarač. Provere i granice asistivne provere vode se u [RESULTS.md](../vule-still/supabase/tests/RESULTS.md). Korak 4 nije commitovan niti pushovan; koraci 5–8 ostaju odvojeni.
+
 **Problem.** Mobilna navigacija i pomoćni tekst često su 11 px. Beli tekst na osnovnom crvenom dugmetu ima kontrast oko 4,19 : 1. Oznaka izbora u postojećim opcijama izrazito se oslanja na boju.
 
 **Rezultat.** U [zajedničkim stilovima](../vule-still/src/app/globals.css) ujednačiti osnovni tekst i unos na 16 px, a akcije, bitna uputstva i greške na najmanje 14 px. Podesiti tamniju crvenu površinu za beli tekst dugmeta. Ujednačiti primarnu, sekundarnu i destruktivnu akciju, fokus, grešku i uspeh. Za više usluga koristiti imenovane kućice za izbor sa vidljivom oznakom. Za vreme se bira samo jedan početak.

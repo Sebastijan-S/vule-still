@@ -23,7 +23,7 @@ test("guest entry has one contact field, no password/code, and validates invalid
   await expect(page.locator('input[type="password"],input[name="code"]')).toHaveCount(0);
   await page.getByLabel("Broj telefona ili mejl", { exact: true }).fill("invalid");
   await page.getByRole("button", { name: "Nastavi", exact: true }).click();
-  await expect(page.locator(".form-error")).toHaveText("Unesi ispravan broj telefona ili mejl adresu.");
+  await expect(page.locator(".field-error[role=alert]")).toHaveText("Unesi ispravan broj telefona ili mejl adresu.");
   await expect(page).toHaveURL(/\/prijava$/);
   for (const width of [390, 1280]) {
     await page.setViewportSize({ width, height: 900 });
