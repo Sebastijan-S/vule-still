@@ -12,6 +12,8 @@ Administratorsko zaglavlje ima tri odeljka, bez javnih sekcija sajta:
 
 ## Ručni klijent, pomeranje i otkazivanje
 
+Ako nema slobodnog vremena, poruka razlikuje neobjavljenu nedelju, neradan dan, zauzetost i prekratak slobodan period. „Izaberi drugi datum“ prebacuje fokus na datum; za novi ručni unos „Promeni usluge“ vraća fokus na izbor usluga. Pri pomeranju već potvrđenog dolaska njegov sastav ostaje isti. Greška veze kaže da dostupnost nije proverena i nudi „Pokušaj ponovo“; ime, kontakt, datum i izbor ostaju u otvorenoj formi. Sačuvaj tek kada uspešna provera ponovo potvrdi slobodan početak. Ako ishod upisa nije poznat, prvo „Proveri isti zahtev“ — nemoj unositi drugi ručni termin. Pri neuspelom učitavanju pregleda naslov/navigacija ostaju, a ponovni pokušaj ponovo čita podatke.
+
 Izbor usluga možeš menjati tastaturom pomoću Tab i Space. Za slobodna vremena koristi Tab do radio grupe, pa strelice i Space; bira se jedan početak za ceo dolazak. Fokus je jasno označen, a destruktivne akcije imaju zaseban izgled. U dijalogu smene Tab/Shift+Tab ostaju među njegovim kontrolama; Escape ili „Zatvori“ vraćaju fokus na otvarač. Greška navodi pogođena polja i usmerava fokus na njih.
 
 Od koraka 3 i forma za novi ručni unos bira više usluga. Označi jednu ili više kućica i proveri pojedinačna trajanja i zbir minuta. Sve usluge pripadaju jednoj osobi koja dolazi. Kartica prikazuje sve sačuvane stavke, a pomeranje koristi njihov prvobitni zbir. Izmena vremena i otkazivanje važe za ceo dolazak. Za promenu sastava otkaži termin i napravi novi.

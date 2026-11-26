@@ -1,6 +1,7 @@
 "use client";
 import { AppointmentServices } from "@/components/appointment-services";
 import { SlotPicker } from "@/components/slot-picker";
+import { AvailabilityFeedback } from "@/components/availability-feedback";
 import { ServicePicker, selectionSnapshot } from "@/components/service-picker";
 import { useEffect, useRef, useState } from "react";
 import { addCalendarDays } from "@/lib/availability";
@@ -14,11 +15,12 @@ export type OwnerState = { server_time: string; reservations: Appointment[] };
 
 function ReservationForm({ row, day, today, locations, services, disabled, onSubmit, onClose }: { row: Appointment | null; day: string; today: string; locations: Location[]; services: Service[]; disabled: boolean; onSubmit: (value: Mutation) => void; onClose: () => void }) {
   const formPanel = useRef<HTMLElement>(null);
+  const dateInput = useRef<HTMLInputElement>(null);
   useEffect(() => { formPanel.current?.scrollIntoView({ block: "start", behavior: "smooth" }); }, []);
   const [location, setLocation] = useState(row?.location_id ?? locations[0]?.id ?? ""), [selection, setSelection] = useState<string[]>([]);
   const [date, setDate] = useState(row ? businessDate(row.starts_at) : day < today ? today : day), [start, setStart] = useState(row ? new Date(row.starts_at).toISOString() : "");
   const [name, setName] = useState(row?.attendee_name ?? ""), [phone, setPhone] = useState(row?.user_id ? "" : row?.phone ?? "");
-  const [availability, setAvailability] = useState<Availability | null>(null), [error, setError] = useState(""), [loading, setLoading] = useState(true), [reload, setReload] = useState(0);
+  const [availability, setAvailability] = useState<Availability | null>(null), [availabilityFailure, setAvailabilityFailure] = useState<string | null>(null), [loading, setLoading] = useState(true), [reload, setReload] = useState(0);
   const query = new URLSearchParams({ date, location });
   selection.forEach(id => query.append("services", id));
   const path = row ? `/api/owner/availability?date=${date}&location=${location}&reservation=${row.id}` : `/api/availability?${query}`;
@@ -26,11 +28,11 @@ function ReservationForm({ row, day, today, locations, services, disabled, onSub
   useEffect(() => {
     if (!row && !selection.length) return;
     const controller = new AbortController();
-    Promise.resolve().then(() => { setLoading(true); setAvailability(null); setError(""); });
+    Promise.resolve().then(() => { if (!controller.signal.aborted) { setLoading(true); setAvailability(null); setAvailabilityFailure(null); } });
     fetch(path, { cache: "no-store", signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]) })
-      .then(async response => { const data = await response.json(); if (!response.ok) throw new Error(data.error); return data as Availability; })
+      .then(async response => { const data = await response.json(); if (!response.ok || !Array.isArray(data.slots) || typeof data.reason !== "string") throw new Error("Availability unavailable"); return data as Availability; })
       .then(result => { if (!controller.signal.aborted) { setAvailability(result); setLoadedPath(path); setStart(current => result.slots.some(s => s.start === current) ? current : ""); } })
-      .catch(cause => { if (!controller.signal.aborted) setError(cause.message ?? "Slobodni termini trenutno nisu dostupni."); })
+      .catch(() => { if (!controller.signal.aborted) { setAvailability(null); setAvailabilityFailure(path); } })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
   }, [path, selection.length, row, reload]);
@@ -38,8 +40,9 @@ function ReservationForm({ row, day, today, locations, services, disabled, onSub
   const total = row?.duration_minutes ?? items.reduce((sum, item) => sum + item.duration_minutes, 0);
   const current = loadedPath === path && (row || selection.length) ? availability : null;
   const slot = current?.slots.find(s => s.start === start);
+  function refreshAvailability() { setLoading(true); setAvailability(null); setAvailabilityFailure(null); setReload(n => n + 1); }
   return <section ref={formPanel} className="booking-panel owner-form" aria-label={row ? "Izmena rezervacije" : "Ručna rezervacija"}><h2>{row ? "Izmeni rezervaciju" : "Ručna rezervacija"}</h2><p className="field-help">{row?.user_id ? "Termin je povezan sa nalogom. Kontakt se čita iz trenutnog profila, a promena ostaje u obaveštenjima klijenta." : "Gost nema nalog i neće dobiti obaveštenje u aplikaciji. Dovoljno je ime; kontakt je opcion."}</p>{row && <p>Sačuvana usluga: <strong>{row.service_name} · {row.duration_minutes} min</strong>. Za promenu usluge otkaži termin i unesi novi.</p>}
-    {row && <AppointmentServices items={row.items} total={row.duration_minutes} />}{error && <p className="form-error" role="alert">{error}</p>}
+    {row && <AppointmentServices items={row.items} total={row.duration_minutes} />}
     <form onSubmit={event => {
       event.preventDefault(); if (!current || !slot || disabled || loading) return;
       const common = { request_key: crypto.randomUUID(), location, start, schedule_revision: current.schedule_revision, name: name.trim(), phone: phone.trim() || null };
@@ -51,9 +54,9 @@ function ReservationForm({ row, day, today, locations, services, disabled, onSub
         {!row?.user_id && <label className="booking-field">Telefon gosta (opciono)<input type="tel" value={phone} onChange={e => setPhone(e.target.value)} maxLength={40} placeholder="064… ili međunarodni pozivni kod" /><span className="field-help">Srpski lokalni broj ili međunarodni broj sa +.</span></label>}
         <label className="booking-field">Lokacija rezervacije<select value={location} onChange={e => { setLocation(e.target.value); setStart(""); }}>{locations.map(l => <option value={l.id} key={l.id}>{l.name}</option>)}</select></label>
         {!row && <><p>Sve izabrane usluge pripadaju jednoj osobi koja dolazi.</p><ServicePicker services={services} selected={selection} onChange={setSelection} /></>}
-        <label className="booking-field">Datum rezervacije<input type="date" value={date} min={today} max={addCalendarDays(today, 14)} onChange={e => { setDate(e.target.value); setStart(""); }} required /></label>
-        <button type="button" className="text-button" onClick={() => setReload(n => n + 1)}>Osveži slobodne termine</button>
-        {!row && !items.length ? <p>Izaberi najmanje jednu uslugu.</p> : loading ? <p role="status">Proveravamo dostupnost…</p> : current && !current.slots.length ? <p className="booking-empty">{current.reason === "unpublished" ? "Raspored još nije objavljen." : "Nema slobodnog termina za ovaj izbor. Proveri datum ili lokaciju."}</p> : <SlotPicker label="Slobodni termini za vlasnika" slots={current?.slots ?? []} selected={start} onChange={setStart} />}
+        <label className="booking-field">Datum rezervacije<input ref={dateInput} type="date" value={date} min={today} max={addCalendarDays(today, 14)} onChange={e => { setDate(e.target.value); setStart(""); }} required /></label>
+        <button type="button" className="text-button" disabled={loading} onClick={refreshAvailability}>Osveži slobodne termine</button>
+        {!row && !items.length ? <p>Izaberi najmanje jednu uslugu.</p> : loading || !current || !current.slots.length ? <AvailabilityFeedback loading={loading || (!current && availabilityFailure !== path)} failed={availabilityFailure === path} reason={current?.reason} onRetry={refreshAvailability} onDate={() => { dateInput.current?.focus(); dateInput.current?.scrollIntoView({ block: "center" }); }} onServices={row ? undefined : () => { const input = formPanel.current?.querySelector<HTMLInputElement>(".service-choice input"); input?.focus(); input?.scrollIntoView({ block: "center" }); }} /> : <SlotPicker label="Slobodni termini za vlasnika" slots={current.slots} selected={start} onChange={setStart} />}
         {slot && <p>Izbor: {dateLabel(start)} · {timeLabel(start)}–{timeLabel(slot.end)} · ukupno {total} min</p>}
         <p className="field-help">Važe objavljene smene, 15 minuta do novog početka i horizont 14 dana. Postojeći termin se može menjati najmanje 30 minuta pre početka.</p>
         <div className="booking-toolbar"><button className="button" type="submit" disabled={!name.trim() || !slot || loading || disabled}>{row ? "Sačuvaj izmenu" : "Potvrdi ručni termin"}</button><button type="button" className="text-button" onClick={onClose} disabled={disabled}>Odustani</button></div>

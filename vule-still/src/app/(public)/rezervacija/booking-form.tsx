@@ -3,6 +3,8 @@ import Link from "next/link";
 import { AppointmentServices } from "@/components/appointment-services";
 import { SlotPicker } from "@/components/slot-picker";
 import { ServicePicker, selectionSnapshot } from "@/components/service-picker";
+import { AvailabilityFeedback } from "@/components/availability-feedback";
+import { BookingDataRecovery } from "@/components/data-recovery";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { addCalendarDays } from "@/lib/availability";
@@ -19,13 +21,15 @@ type Draft = { location?: string; services?: unknown[]; service?: string; date?:
 const messages: Record<string, string> = { unpublished: "Raspored još nije objavljen.", closed: "Ovaj dan je neradan.", fully_booked: "Svi odgovarajući termini su zauzeti.", insufficient_duration: "Nema dovoljno dugog slobodnog perioda za izabrane usluge.", cutoff: "Za danas više nema termina koji počinju najmanje 15 minuta unapred.", outside_horizon: "Izaberi datum u narednih 14 dana.", inactive_service: "Usluga više nije dostupna. Ponovo izaberi uslugu.", inactive_location: "Lokacija više nije dostupna. Ponovo izaberi lokaciju." };
 const draftKey = "vule-booking-selection";
 const withdrawnMessage = "Deo sačuvanog izbora više nije u ponudi. Preostale usluge su sačuvane. Pregledaj izbor i izaberi vreme.";
-export function BookingForm({ locations, services, user, today, initial }: { locations: Location[]; services: Service[]; user: User; today: string; initial: { location?: string; service?: string; resume?: boolean } }) {
+export function BookingForm({ locations, services, user, today, initial, catalogueUnavailable = false }: { locations: Location[]; services: Service[]; user: User; today: string; initial: { location?: string; service?: string; resume?: boolean }; catalogueUnavailable?: boolean }) {
   const router = useRouter();
   const navigation = bookingNavigation(locations);
   const [location, setLocation] = useState(""), [selection, setSelection] = useState<string[]>([]);
   const [date, setDate] = useState(today), [start, setStart] = useState("");
   const [step, setStep] = useState(0), [ready, setReady] = useState(false), [needsReview, setNeedsReview] = useState(false);
   const [availability, setAvailable] = useState<(Availability & { query: string }) | null>(null), [loading, setLoading] = useState(false), [reload, setReload] = useState(0);
+  const [availabilityFailure, setAvailabilityFailure] = useState<string | null>(null);
+  const dateInput = useRef<HTMLInputElement>(null);
   const [other, setOther] = useState(false), [attendee, setAttendee] = useState("");
   const [attendeeError, setAttendeeError] = useState("");
   const attendeeInput = useRef<HTMLInputElement>(null);
@@ -35,13 +39,26 @@ export function BookingForm({ locations, services, user, today, initial }: { loc
   useEffect(() => { if (ready) { const heading = panel.current?.querySelector("h2"); if (heading) { heading.tabIndex = -1; heading.focus(); } } }, [step, success, ready]);
   const pendingKey = `vule-booking-pending:${user?.id ?? "anonymous"}`;
   useEffect(() => {
-    const entry = JSON.stringify([initial.location, initial.service, initial.resume, user?.id]);
+    const entry = JSON.stringify([initial.location, initial.service, initial.resume, user?.id, catalogueUnavailable]);
     if (hydrated.current === entry) return;
     hydrated.current = entry;
     // Capture before the persistence effect can run for a changed URL/account.
     let saved: Draft | null = null;
     try { saved = JSON.parse(sessionStorage.getItem(draftKey) ?? "null"); } catch {}
     Promise.resolve().then(() => {
+      try {
+        const request = JSON.parse(sessionStorage.getItem(pendingKey) ?? "null");
+        // Recover the original request before consulting a possibly unavailable catalogue.
+        if (user && parseConfirmation(request)) {
+          setPending(request); setLocation(request.location); setStart(request.start); setDate(businessDate(request.start)); setStep(3);
+          const requestIds: string[] = "services" in request ? request.services : [request.service];
+          setSelection(services.filter(s => requestIds.includes(s.id)).map(s => s.id));
+          setOther(!!request.attendee_name); setAttendee(request.attendee_name ?? ""); setNotice(""); setReady(true);
+          return;
+        }
+      } catch {}
+      // A load failure is not a withdrawn selection. Do not rewrite the saved draft.
+      if (catalogueUnavailable) { setReady(true); return; }
       // A matching URL on refresh restores the whole draft, including additions to a direct link.
       const legacyMatch = saved?.entryService === undefined && saved?.service && services.some(s => s.slug === initial.service && s.id === saved.service);
       const direct = !!initial.service && !initial.resume && saved?.entryService !== initial.service && !legacyMatch;
@@ -61,37 +78,27 @@ export function BookingForm({ locations, services, user, today, initial }: { loc
       setNeedsReview(review);
       if (review) setNotice(withdrawnMessage);
       setStep(!loc ? 0 : review || !remaining.length ? 1 : direct ? 2 : saved?.step === 1 ? 1 : saved?.step === 3 && restoredStart ? 3 : 2);
-      try {
-        const request = JSON.parse(sessionStorage.getItem(pendingKey) ?? "null");
-        // Validate without replacing the original object, order or legacy scalar format.
-        if (user && parseConfirmation(request)) {
-          setPending(request); setLocation(request.location); setStart(request.start); setDate(businessDate(request.start)); setStep(3);
-          const requestIds: string[] = "services" in request ? request.services : [request.service];
-          setSelection(services.filter(s => requestIds.includes(s.id)).map(s => s.id));
-          setOther(!!request.attendee_name); setAttendee(request.attendee_name ?? ""); setNotice("");
-        }
-      } catch {}
       setReady(true);
     });
-  }, [initial.location, initial.service, initial.resume, locations, services, today, user, pendingKey]);
+  }, [initial.location, initial.service, initial.resume, locations, services, today, user, pendingKey, catalogueUnavailable]);
   useEffect(() => {
-    if (!ready || pending) return;
+    if (!ready || pending || catalogueUnavailable) return;
     const remaining = selection.filter(id => services.some(s => s.id === id));
     if (remaining.length !== selection.length) Promise.resolve().then(() => {
       setSelection(remaining); setStart(""); setNeedsReview(true); setStep(location ? 1 : 0); setNotice(withdrawnMessage);
     });
-  }, [services, selection, ready, pending, location]);
-  useEffect(() => { if (ready && !success && !pending) { try { sessionStorage.setItem(draftKey, JSON.stringify({ location, services: selection, date, start, step, other, attendee, needsReview, entryService: initial.service })); } catch {} } }, [location, selection, date, start, step, other, attendee, needsReview, initial.service, ready, success, pending]);
+  }, [services, selection, ready, pending, location, catalogueUnavailable]);
+  useEffect(() => { if (ready && !success && !pending && !catalogueUnavailable) { try { sessionStorage.setItem(draftKey, JSON.stringify({ location, services: selection, date, start, step, other, attendee, needsReview, entryService: initial.service })); } catch {} } }, [location, selection, date, start, step, other, attendee, needsReview, initial.service, ready, success, pending, catalogueUnavailable]);
   const query = new URLSearchParams({ date, location }); selection.forEach(id => query.append("services", id));
   const queryString = query.toString();
   const catalogueSnapshot = JSON.stringify(selectionSnapshot(services, selection));
   const available = availability?.query === queryString ? availability : null;
   useEffect(() => {
-    if (!ready || pending || !location || !selection.length) return;
+    if (!ready || pending || catalogueUnavailable || !location || !selection.length) return;
     const controller = new AbortController();
-    Promise.resolve().then(() => { if (!controller.signal.aborted) { setLoading(true); setAvailable(null); } });
+    Promise.resolve().then(() => { if (!controller.signal.aborted) { setLoading(true); setAvailable(null); setAvailabilityFailure(null); } });
     fetch(`/api/availability?${queryString}`, { cache: "no-store", signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]) })
-      .then(async response => { const body = await response.json(); if (!response.ok) throw new Error(body.error); return body as Availability; })
+      .then(async response => { const body = await response.json(); if (!response.ok || !Array.isArray(body.slots) || typeof body.reason !== "string") throw new Error("Availability unavailable"); return body as Availability; })
       .then(data => { if (!controller.signal.aborted) {
         if (data.reason === "inactive_service") { setStart(""); setStep(1); setNeedsReview(true); setNotice(withdrawnMessage); router.refresh(); return; }
         const expected: ServiceSnapshot[] = JSON.parse(catalogueSnapshot);
@@ -104,10 +111,10 @@ export function BookingForm({ locations, services, user, today, initial }: { loc
           return current;
         });
       } })
-      .catch(cause => { if (!controller.signal.aborted) setError(cause.message || "Slobodni termini trenutno nisu dostupni."); })
+      .catch(() => { if (!controller.signal.aborted) { setAvailable(null); setAvailabilityFailure(queryString); } })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
-  }, [queryString, catalogueSnapshot, selection.length, location, ready, reload, pending, router]);
+  }, [queryString, catalogueSnapshot, selection.length, location, ready, reload, pending, router, catalogueUnavailable]);
   const selectedLocation = locations.find(l => l.id === location);
   const items: ServiceSnapshot[] = pending ? "services" in pending ? pending.expected_items
     : [{ service_id: pending.service, service_name: pending.expected_service_name, duration_minutes: pending.expected_duration }]
@@ -115,7 +122,8 @@ export function BookingForm({ locations, services, user, today, initial }: { loc
   const total = pending?.expected_duration ?? items.reduce((sum, item) => sum + item.duration_minutes, 0);
   const slot = available?.slots.find(s => s.start === start);
   const end = start && total ? new Date(Date.parse(start) + total * 60000).toISOString() : "";
-  const summary = <><p>Lokacija: <strong>{selectedLocation?.name ?? location}</strong></p><ul aria-label="Izabrane usluge">{items.map(item => <li key={item.service_id}>{item.service_name} · {item.duration_minutes} min</li>)}</ul><p aria-live="polite"><strong>Ukupno trajanje: {total} min</strong></p></>;
+  const summary = <><p>Lokacija: <strong>{selectedLocation?.name ?? "Sačuvana lokacija"}</strong></p><ul aria-label="Izabrane usluge">{items.map(item => <li key={item.service_id}>{item.service_name} · {item.duration_minutes} min</li>)}</ul><p aria-live="polite"><strong>Ukupno trajanje: {total} min</strong></p></>;
+  function refreshAvailability() { setLoading(true); setAvailable(null); setAvailabilityFailure(null); setReload(n => n + 1); }
   function clearPending() { setPending(null); try { sessionStorage.removeItem(pendingKey); } catch {} }
   async function confirm() {
     if (submitting.current || !user || (!pending && (!user.complete || !slot || !items.length || !selectedLocation || needsReview))) return;
@@ -147,15 +155,16 @@ export function BookingForm({ locations, services, user, today, initial }: { loc
     finally { submitting.current = false; setBusy(false); }
   }
   if (success) return <section ref={panel} className="booking-panel" aria-label="Potvrđena rezervacija"><p className="eyebrow">REZERVACIJA JE POTVRĐENA</p><h2>Vidimo se <em>uskoro.</em></h2><dl className="appointment-facts"><div><dt>Usluge</dt><dd>{success.service_name} · {success.duration_minutes} min</dd></div><div><dt>Lokacija</dt><dd>{success.location_name ?? selectedLocation?.name}</dd></div><div><dt>Termin</dt><dd>{dateLabel(success.starts_at)} · {timeLabel(success.starts_at)}–{timeLabel(success.ends_at)} ({offsetLabel(success.starts_at)})</dd></div><div><dt>Osoba</dt><dd>{success.attendee_name}</dd></div></dl><AppointmentServices items={success.items} total={success.duration_minutes} /><p>Potvrda je sačuvana u aplikaciji. Obaveštenja vidiš kada otvoriš Moje termine; ne šaljemo booking mejlove.</p><Link className="button" href="/moji-termini">Moji termini</Link></section>;
+  if (ready && catalogueUnavailable && !pending) return <BookingDataRecovery />;
   return <section ref={panel} className="booking-panel" aria-label="Zakazivanje termina">
     <ol className="booking-progress">{navigation.steps.map((i, index) => <li key={i}><button type="button" aria-current={step === i ? "step" : undefined} disabled={!ready || busy || !!pending || (i > 0 && !location) || (i > 1 && (!items.length || needsReview)) || (i > 2 && (!slot || loading))} onClick={() => { setStep(i); setError(""); }}>{index + 1}. {["Lokacija", "Usluge", "Termin", "Pregled"][i]}</button></li>)}</ol>
     <p className="field-help">Vreme u Srbiji · izbor nije rezervacija niti zauzeće termina.</p>
     {error && <p role="alert" className="form-error">{error}</p>}{notice && <p role="status" className="booking-empty">{notice}</p>}
     {!ready ? <p role="status">Učitavamo sačuvani izbor…</p> : <>
-      {step === 0 && <><h2>Izaberi lokaciju</h2><div className="booking-options">{locations.map(l => <button type="button" className="booking-option" aria-pressed={location === l.id} key={l.id} onClick={() => { if (location !== l.id) { setLocation(l.id); setStart(""); } setStep(items.length && initial.service && !needsReview ? 2 : 1); setError(""); }}>{l.name}</button>)}</div></>}
-      {step === 1 && <><h2>Usluge</h2><p>Izaberi jednu ili više usluga za jednu osobu.</p><p>Lokacija: <strong>{selectedLocation?.name}</strong></p><ServicePicker services={services} selected={selection} onChange={ids => { setSelection(ids); setError(""); }} /><button type="button" className="button" disabled={!items.length || busy} onClick={() => { setNeedsReview(false); setNotice(""); setStep(2); }}>Izaberi vreme</button></>}
-      {step === 2 && <><h2>Izaberi datum i vreme</h2>{summary}<button type="button" className="text-button" disabled={busy} onClick={() => setStep(1)}>Dodaj ili promeni usluge</button><label className="booking-field">Datum<input type="date" min={today} max={addCalendarDays(today, 14)} value={date} onChange={e => { setDate(e.target.value); setStart(""); setError(""); }} /></label><button type="button" className="text-button" onClick={() => { setError(""); setReload(n => n + 1); }}>Osveži slobodne termine</button>
-        {loading ? <p role="status">Proveravamo slobodne termine…</p> : available && !available.slots.length ? <p className="booking-empty">{messages[available.reason] ?? "Za ovaj izbor nema slobodnih termina."}</p> : <SlotPicker slots={available?.slots ?? []} selected={start} onChange={value => { setStart(value); setError(""); }} />}
+      {step === 0 && <><h2>Izaberi lokaciju</h2>{!locations.length && <div className="booking-empty" role="status"><p>Trenutno nema lokacija otvorenih za novo zakazivanje.</p><button type="button" className="outline-link" onClick={() => router.refresh()}>Proveri ponovo</button></div>}<div className="booking-options">{locations.map(l => <button type="button" className="booking-option" aria-pressed={location === l.id} key={l.id} onClick={() => { if (location !== l.id) { setLocation(l.id); setStart(""); } setStep(items.length && initial.service && !needsReview ? 2 : 1); setError(""); }}>{l.name}</button>)}</div></>}
+      {step === 1 && <><h2>Usluge</h2><p>Izaberi jednu ili više usluga za jednu osobu.</p><p>Lokacija: <strong>{selectedLocation?.name}</strong></p>{!services.length && <div className="booking-empty" role="status"><p>Trenutno nema dostupnih usluga za novo zakazivanje.</p><button type="button" className="outline-link" onClick={() => router.refresh()}>Proveri ponovo</button></div>}<ServicePicker services={services} selected={selection} onChange={ids => { setSelection(ids); setError(""); }} /><button type="button" className="button" disabled={!items.length || busy} onClick={() => { setNeedsReview(false); setNotice(""); setStep(2); }}>Izaberi vreme</button></>}
+      {step === 2 && <><h2>Izaberi datum i vreme</h2>{summary}<button type="button" className="text-button" disabled={busy} onClick={() => setStep(1)}>Dodaj ili promeni usluge</button><label className="booking-field">Datum<input ref={dateInput} type="date" min={today} max={addCalendarDays(today, 14)} value={date} onChange={e => { setDate(e.target.value); setStart(""); setError(""); }} /></label><button type="button" className="text-button" disabled={loading} onClick={refreshAvailability}>Osveži slobodne termine</button>
+        {loading || !available || !available.slots.length ? <AvailabilityFeedback loading={loading || (!available && availabilityFailure !== queryString)} failed={availabilityFailure === queryString} reason={available?.reason} onRetry={refreshAvailability} onDate={() => { dateInput.current?.focus(); dateInput.current?.scrollIntoView({ block: "center" }); }} onServices={() => setStep(1)} /> : <SlotPicker slots={available.slots} selected={start} onChange={value => { setStart(value); setError(""); }} />}
         {slot && <p>Izbor: {dateLabel(start)} · {timeLabel(start)}–{timeLabel(slot.end)}</p>}
         <button type="button" className="button" disabled={!slot || loading || needsReview || !items.length} onClick={() => setStep(3)}>Pregled rezervacije</button></>}
       {step === 3 && <><h2>Proveri svoj izbor</h2>{summary}{!pending && <button type="button" className="text-button" disabled={busy} onClick={() => setStep(1)}>Dodaj ili promeni usluge</button>}<dl className="appointment-facts"><div><dt>Termin</dt><dd>{start && dateLabel(start)} · {start && timeLabel(start)}–{end && timeLabel(end)} ({start && offsetLabel(start)})</dd></div><div><dt>Kontakt</dt><dd>{user?.email ?? "Prijava je potrebna za potvrdu."}</dd></div></dl>

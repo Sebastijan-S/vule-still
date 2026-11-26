@@ -78,6 +78,8 @@ Svaka numerisana celina ima sopstvenu proveru i može da bude poseban commit. Ko
 
 ### 5. P1 — Početna stranica i mobilna navigacija
 
+**Status 26.11.2026:** Implementiran ceo korak 5 na `phase/07-booking`, posle pushovanog koraka 4 (`246c73f5d641d44ee985d0244de64184b9a55bf1`). Uvod/fotografija/logo/Manrope ostaju; uklonjeni su traka slogana, bočni natpis i promotivna kartica. Usluge sa trajanjem su odmah posle uvoda, zatim Neuzin sa akcijom i kraća najava Zrenjanina. Mobilno zaglavlje ističe „Moji termini“ i „Rezerviši“; sekundarni meni ima Enter/Space, Escape, povratak fokusa i normalan Tab izlaz. „Usluge“ vodi do prve stavke, uključujući dolazak sa druge rute i strimovan katalog. Desktop zadržava vidljive linkove. **46 ciljanih Chrome testova, 30 lokalnih testova, lint, TypeScript i završni test build prolaze.** Detalji, stvarni zum 200% i očuvanje podataka: [RESULTS.md](../vule-still/supabase/tests/RESULTS.md). Server ostaje na portu 3100. Bez commit-a/push-a do korisničkog pregleda; koraci 6–8 nisu uključeni.
+
 **Problem.** Lista usluga dolazi posle promotivne kartice i trake slogana. Prva kartica lokacije pripada Zrenjaninu, iako je Neuzin otvoren za zakazivanje. Na mobilnom zaglavlje skriva dugme za rezervaciju.
 
 **Rezultat.** Zadržati glavnu fotografiju i „Tvoj stil. Tvoj potpis.“ Ukloniti traku slogana, bočni natpis i promotivnu karticu. Posle uvoda prikazati usluge sa trajanjem, zatim Neuzin sa akcijom i kraću najavu za Zrenjanin. Na telefonu istaknuti „Rezerviši“ i „Moji termini“, a sekundarne linkove staviti u meni. Na desktopu zadržati vidljivu glavnu navigaciju.
@@ -85,6 +87,8 @@ Svaka numerisana celina ima sopstvenu proveru i može da bude poseban commit. Ko
 **Gde i provera.** [Početna stranica](../vule-still/src/app/(public)/page.tsx) i [javno zaglavlje](../vule-still/src/components/site-shell.tsx). Na telefonu se iz menija „Usluge“ stiže odmah do prve usluge. Proveriti otvaranje i zatvaranje menija tastaturom, direktan izbor usluge i da samo aktivna lokacija ima akciju za rezervaciju.
 
 ### 6. P1 — Dostupnost, prazna stanja i oporavak od greške
+
+**Status i odobrenje 26.11.2026:** Ceo korak 6 je sproveden. Korisnik je tokom rada naložio „Odmah kad zavrsis uradi i push“; odobreni su commit i normalni push koraka 5–6 na `phase/07-booking`, što menja raniju zabranu objave koraka 5. Katalog ima nezavisne server/Suspense sekcije i lokalno ponovno učitavanje, sa stalnim naslovima/sidrima. Greške dostupnosti i prazni razlozi imaju različite poruke/akcije u javnom i vlasničkom unosu. Pad kataloga/profila ne briše nacrt i ne sprečava ponavljanje sačuvanog pending zahteva. Granice grešaka čuvaju kontekst i koriste aktuelni Next.js `retry()`. **59 + 6 Chrome provera, 30 lokalnih testova, lint, TypeScript i završni test build PASS.** Stari termini i raspored očuvani; detalji i testni transport kvarova su u [RESULTS.md](../vule-still/supabase/tests/RESULTS.md). Koraci 7–8 ostaju odvojeni.
 
 **Problem.** Jedna neuspešna komponenta kataloga uklanja obe sekcije i mete linkova „Usluge“ i „Lokacije“. Pri grešci učitavanja rezervacije gubi se kontekst stranice. Neobjavljen raspored traži drugačiju poruku od zauzetog dana ili prekratkog perioda.
 

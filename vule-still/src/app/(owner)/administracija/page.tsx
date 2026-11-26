@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { DataBoundary } from "@/components/data-recovery";
 import { requireUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { OwnerDenied } from "@/components/owner-shell";
@@ -21,5 +22,5 @@ async function Content() {
   return <OwnerAppointments userId={user.id} today={today} locations={locations.data ?? []} services={services.data ?? []} initialData={appointments.data as unknown as OwnerState} />;
 }
 export default function OwnerPage() {
-  return <main id="main" className="container account-main"><PageHeading label="VLASNIK" description="Pregled termina i svakodnevno upravljanje za jednog frizera na obe lokacije.">Pregled <em>rezervacija.</em></PageHeading><Suspense fallback={<p role="status">Učitavamo administraciju…</p>}><Content /></Suspense></main>;
+  return <main id="main" className="container account-main"><PageHeading label="VLASNIK" description="Pregled termina i svakodnevno upravljanje za jednog frizera na obe lokacije.">Pregled <em>rezervacija.</em></PageHeading><DataBoundary title="Pregled rezervacija trenutno nije dostupan"><Suspense fallback={<p role="status">Učitavamo administraciju…</p>}><Content /></Suspense></DataBoundary></main>;
 }

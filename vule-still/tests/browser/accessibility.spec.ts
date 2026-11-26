@@ -70,7 +70,7 @@ for(const width of [360,390,768,1280]) test(`readable keyboard booking and singl
 });
 for(const width of [360,390,768,1280]) test(`home, guest input/error and primary contrast at ${width}px`,async({page})=>{
   await page.setViewportSize({width,height:900});await page.goto("/");await fits(page);
-  for(const link of await page.locator(".site-header .nav-link, .site-header .account-link").all()){
+  for(const link of await page.locator(".site-header .nav-link:visible, .site-header .account-link:visible").all()){
     expect(await link.evaluate(el=>parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(14);
     const box=await link.boundingBox();expect(box!.height).toBeGreaterThanOrEqual(44);
   }

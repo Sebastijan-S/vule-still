@@ -1,5 +1,9 @@
 # Vule Still — plan nove aplikacije
 
+**Aktuelno 26.11.2026, koraci 5–6:** Završeni su početna/mobilna navigacija i oporavak kataloga/dostupnosti/booking unosa. Prošlo je **59 ciljanih Chrome provera na 3100 + 6 serverskih scenarija sa kontrolisanim kvarovima na privremenom 3101**, 30 lokalnih testova, lint, TypeScript i završni build. Postojeći termini i raspored su očuvani. Korisnik je izričito odobrio commit i push odmah po završetku koraka 6, uključujući sačuvane izmene koraka 5. Sledeći je korak 7. Server za pregled ostaje http://127.0.0.1:3100; detalji su u [RESULTS.md](../vule-still/supabase/tests/RESULTS.md). Raniji zapisi ispod ostaju istorijski.
+
+**Aktuelno 26.11.2026:** Ceo korak 5 [UI plana](PLAN-UI-I-VISE-USLUGA.md) je lokalno spreman za pregled: uvod → usluge → Neuzin → kraća najava Zrenjanina, mobilne primarne akcije i pristupačan sekundarni meni. Zadržane su booking funkcionalnosti koraka 3–4. Prošlo je 46 ciljanih Chrome i 30 lokalnih testova, lint, TypeScript i završni build; detalji i granice dokaza su u [RESULTS.md](../vule-still/supabase/tests/RESULTS.md). Server ostaje na http://127.0.0.1:3100. Bez commit-a/push-a do odobrenja; koraci 6–8 nisu uključeni. Stariji statusi ispod su istorijski.
+
 **Aktuelno 25.11.2026:** Korak 3 [UI plana](PLAN-UI-I-VISE-USLUGA.md) je spreman za pregled: javni i ručni unos više usluga, skraćeni tok za jednu lokaciju, čuvanje izbora i tačno ponavljanje pending zahteva. Važe nova kataloška trajanja i jedan dolazak sa zbirom svih različitih stavki. [Najnoviji rezultati](../vule-still/supabase/tests/RESULTS.md): 152 SQL, 30 lokalnih i 19 ciljanih Chrome provera. Istorijski opisi jedne usluge/ranijeg Auth toka ispod nisu aktuelna implementacija. Server: http://127.0.0.1:3100. Bez commit-a/push-a do korisničkog pregleda.
 
 Osnovna specifikacija: 31.10.2026. Aktuelni skraćeni plan: 3.11.2026.
