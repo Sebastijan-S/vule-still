@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
   distDir: process.env.VULE_BUILD_DIR || ".next",
   cacheComponents: true,
   partialPrefetching: true,
+  experimental: {
+    agentUpgrade: "security",
+  },
   turbopack: {
     rules: {
       "*.css": {

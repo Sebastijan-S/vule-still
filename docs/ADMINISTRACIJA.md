@@ -1,6 +1,6 @@
 # Vule Still — kratko uputstvo za vlasnika
 
-Lokalni testni ulaz: **http://127.0.0.1:3100/administrator**. Otvori u Google Chrome-u. Sajt i administracija koriste isti lokalni server i test projekat Vule-still-test. Na konačnom domenu ulaz će imati istu putanju `/administrator`; produkcija još nije objavljena.
+Lokalni testni ulaz: **http://127.0.0.1:3100/administrator**. Otvori u Google Chrome-u. Sajt i administracija koriste isti lokalni server i test projekat Vule-still-test. Po korisničkoj instrukciji server se gasi na kraju dana; za naredni pregled pokreni `npm.cmd run dev:test` iz `vule-still/`. Next.js je sigurnosno nadograđen na 16.4.6. Na konačnom domenu ulaz će imati istu putanju `/administrator`; produkcija još nije objavljena.
 
 Prijavi se postojećim vlasničkim nalogom. Važi trenutna testna prijava imejlom i lozinkom. Registracija običnog naloga i poznavanje direktnog linka ne daju vlasnička prava. Vlasništvo se proverava na serveru i u bazi; dodela ili prenos vlasništva nisu samostalna registracija. Telefon + lozinka ostaje zaseban završni posao.
 
@@ -50,4 +50,4 @@ U **Uobičajena nedelja** izmeni željeni dan/lokaciju, dodaj pauzu ili ukloni s
 
 Na telefonu i računaru proveri zaseban ulaz i navigaciju, dnevni/sedmodnevni pregled, ručni unos samo sa imenom, pomeranje na drugi datum, potvrdu otkazivanja, nedeljnu smenu/pauzu i razliku između šablona, nacrta i objave. Korisničko prihvatanje još nije evidentirano.
 
-Rezultati automatizovanih i stvarnih provera: [rezultati](../vule-still/supabase/tests/RESULTS.md). Stanje i predaja: [plan faza](../PHASE_PLAN.md). Faza 11, završni Auth i produkciona aktivacija ostaju odvojeni poslovi. Nije bilo commit-a, push-a ni javne objave.
+Rezultati automatizovanih i stvarnih provera: [rezultati](../vule-still/supabase/tests/RESULTS.md). Stanje i predaja: [plan faza](../PHASE_PLAN.md). Koraci 7–8 i proverena sigurnosna nadogradnja odobreni su za commit/push. Faza 11, završni Auth i produkciona aktivacija ostaju odvojeni poslovi; javna aktivacija nije deo ove predaje.

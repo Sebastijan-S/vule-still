@@ -2,6 +2,8 @@
 
 **25. novembar 2026. · Plan za implementaciju po koracima**
 
+**Završno odobrenje 26.11.2026:** Korisnik je nakon pregleda tražio sigurnosnu nadogradnju i push koraka 7–8. Next.js je nadograđen sa 16.4.3 na 16.4.6 prema `next upgrade --agent=security`; puni audit je bez ranjivosti, a ponovljene provere i build prolaze. Time su ranije zabrane commit-a/push-a i upozorenje o nerešenoj Next.js ranjivosti istorijski zapisi. Gašenje lokalnih Vule servera pri završetku dana je odobreno. Produkcija ostaje odvojena. [Rezultati nadogradnje](../vule-still/supabase/tests/RESULTS.md).
+
 Klijent treba da može da izabere jednu ili više usluga, vidi koliko dolazak traje i pronađe odgovarajuće vreme. Vlasnik treba da vidi sve usluge tog dolaska na jednoj rezervaciji. Zadržavamo postojeći tamni izgled, logo, fotografiju i Manrope. Nove rezervacije su trenutno dostupne u Neuzinu. Premium usluge povlačimo iz nove ponude i čuvamo za kasniji povratak.
 
 **Polazna tačka za kod:** [GitHub commit 8c1d432 na grani phase/07-booking](https://github.com/Sebastijan-S/vule-still/commit/8c1d4322ebea1cd75cdfc9d2eab4244f9a7bac2d). Git čuva izvorni kod i migracije. Pre buduće migracije podataka posebno proveriti stanje i mogućnost oporavka test baze.
