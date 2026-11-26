@@ -3,12 +3,12 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
-import { normalizeEmail, normalizePhone, readText, validName, type ProfileState } from "@/lib/auth/validation";
+import { normalizeEmail, normalizePhone, readText, safeReturnTo, validName, type ProfileState } from "@/lib/auth/validation";
 import { recordUserActivity } from "@/lib/auth/activity";
 import { accountReturnTo } from "@/lib/auth/navigation";
 
 export async function saveProfile(_previous: ProfileState, form: FormData): Promise<ProfileState> {
-  const user = await requireUser();
+  const user = await requireUser(safeReturnTo(form.get("next")));
   const values = { first_name: readText(form.get("first_name")), last_name: readText(form.get("last_name")), phone: readText(form.get("phone")), contact_email: readText(form.get("contact_email")) };
   const errors: NonNullable<ProfileState["errors"]> = {};
   if (!validName(values.first_name)) errors.first_name = "Unesi ime (do 80 znakova).";

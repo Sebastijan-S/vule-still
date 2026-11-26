@@ -41,7 +41,7 @@ test("controlled full multi-service visit through guest/profile/refresh, lost re
     await page.getByLabel("Broj telefona ili mejl",{exact:true}).fill(`ui3-${randomUUID()}@example.invalid`);
     await page.getByRole("button",{name:"Nastavi",exact:true}).click();await expect(page).toHaveURL(/\/profil\?/);
     await page.reload();await page.getByLabel("Ime",{exact:true}).fill("UI3");await page.getByLabel("Prezime",{exact:true}).fill("Test osoba");
-    await page.getByRole("button",{name:"Sačuvaj podatke",exact:true}).click();await expect(page).toHaveURL(/\/rezervacija\?nastavi=1$/);
+    await page.getByRole("button",{name:"Sačuvaj i nastavi",exact:true}).click();await expect(page).toHaveURL(/\/rezervacija\?nastavi=1$/);
     await expect(page.getByRole("heading",{name:"Proveri svoj izbor",exact:true})).toBeVisible();
     await expect(page.getByRole("list",{name:"Izabrane usluge"}).getByRole("listitem")).toHaveCount(2);
     await expect(page.locator(".appointment-facts")).toContainText("16:00–16:30");

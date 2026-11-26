@@ -61,7 +61,7 @@ export function bookingFailure(message: string) {
   const failures: Record<string, { status: number; error: string }> = {
     SESSION_REQUIRED: { status: 401, error: "Prijavi se ponovo da nastaviš." },
     BOOKING_BLOCKED: { status: 403, error: "Ovom nalogu je onemogućeno novo zakazivanje. Kontaktiraj salon." },
-    PROFILE_REQUIRED: { status: 422, error: "Pre rezervacije popuni ime, prezime i telefon u profilu." },
+    PROFILE_REQUIRED: { status: 422, error: "Pre rezervacije popuni ime, prezime i jedan kontakt (telefon ili mejl) u profilu." },
     SLOT_TAKEN: { status: 409, error: "Ovaj termin je upravo zauzet. Izaberi drugi slobodan termin." },
     SCHEDULE_CHANGED: { status: 409, error: "Raspored je promenjen. Ponovo izaberi slobodan termin." },
     SERVICE_CHANGED: { status: 409, error: "Naziv ili trajanje usluge su promenjeni. Osveži stranicu i ponovo proveri izbor pre potvrde." },

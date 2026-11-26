@@ -33,6 +33,7 @@ test("booking conflicts, access and unknown outcomes have distinct safe response
   assert.equal(bookingFailure("SESSION_REQUIRED").status,401);
   assert.equal(bookingFailure("BOOKING_BLOCKED").status,403);
   assert.equal(bookingFailure("PROFILE_REQUIRED").status,422);
+  assert.match(bookingFailure("PROFILE_REQUIRED").error,/telefon ili mejl/);
   assert.equal(bookingFailure("RESERVATION_NOT_FOUND").status,404);
   assert.equal(bookingFailure("CANCELLATION_TOO_LATE").status,409);
   assert.equal(bookingFailure("database private details").status,503);

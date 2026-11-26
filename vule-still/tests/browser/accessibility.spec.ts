@@ -101,10 +101,10 @@ for(const width of [360,390,768,1280]) test(`dialog keyboard trap, field error a
   await login(page,"owner");await page.setViewportSize({width,height:900});await page.goto("/administrator/sablon");
   const opener=page.getByRole("button",{name:/^Izmeni uobičajenu smenu — Neuzin, Ponedeljak/});await opener.focus();await page.keyboard.press("Enter");
   const dialog=page.getByRole("dialog",{name:"Izmeni smenu",exact:true});await expect(dialog).toBeVisible();
-  const close=dialog.getByRole("button",{name:"Zatvori izmenu smene",exact:true}),apply=dialog.getByRole("button",{name:"Primeni u nacrtu",exact:true});
+  const close=dialog.getByRole("button",{name:"Zatvori izmenu smene",exact:true}),apply=dialog.getByRole("button",{name:"Primeni u šablonu",exact:true});
   await close.focus();await page.keyboard.press("Shift+Tab");await expect(apply).toBeFocused();await page.keyboard.press("Tab");await expect(close).toBeFocused();
   for(let i=0;i<15;i++){await page.keyboard.press("Tab");expect(await dialog.evaluate(el=>el.contains(document.activeElement))).toBe(true);}
-  const start=page.getByLabel("Početak smene",{exact:true}),end=page.getByLabel("Kraj smene",{exact:true});await start.fill("18:00");await end.fill("17:00");await dialog.getByRole("button",{name:"Primeni u nacrtu",exact:true}).click();
+  const start=page.getByLabel("Početak smene",{exact:true}),end=page.getByLabel("Kraj smene",{exact:true});await start.fill("18:00");await end.fill("17:00");await dialog.getByRole("button",{name:"Primeni u šablonu",exact:true}).click();
   await expect(end).toHaveAttribute("aria-invalid","true");await expect(end).toHaveAccessibleDescription("Kraj smene mora biti posle početka, u istom danu.");await expect(end).toBeFocused();
   const bounds=await dialog.boundingBox();expect(bounds!.x).toBeGreaterThanOrEqual(0);expect(bounds!.x+bounds!.width).toBeLessThanOrEqual(width);expect(await dialog.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);
   await contrast(page,[".shift-dialog .button",".shift-dialog .danger-text",".shift-dialog .form-error",".shift-dialog .field-help"]);

@@ -6,8 +6,8 @@ Prijavi se postojećim vlasničkim nalogom. Važi trenutna testna prijava imejlo
 
 Administratorsko zaglavlje ima tri odeljka, bez javnih sekcija sajta:
 
-1. **Rezervacije:** odaberi datum, dan ili sedam dana od tog datuma. „Danas“/„Sutra“ ubrzavaju izbor. Filtriraj po lokaciji i statusu. Kartica pokazuje vreme, lokaciju, osobu, telefon i status; „Detalji i kontakt“ otvara dodatne podatke. Jedan frizer je zajednički za obe lokacije.
-2. **Radno vreme:** dva kalendara konkretne nedelje, Zrenjanin i Neuzin. Na telefonu prevuci sam kalendar vodoravno. Klikni smenu za izmenu ili **+** u zaglavlju dana za dodavanje rada. Ovo otvara radno vreme, ne pravi rezervaciju klijenta.
+1. **Rezervacije:** odaberi datum, dan ili sedam dana od tog datuma. „Danas“/„Sutra“ ubrzavaju izbor. Filter istorije ima **Obe lokacije**, **Zrenjanin** i **Neuzin**, nezavisno od toga gde je novo zakazivanje otvoreno. Kartica pokazuje interval, lokaciju, osobu, kontakt, status, sve sačuvane usluge i ukupno trajanje; „Detalji i kontakt“ otvara dodatne podatke. Jedan frizer je zajednički za obe lokacije.
+2. **Radno vreme:** na telefonu u polju **Izabrani dan** odaberi dan konkretne nedelje. Ispod se prikazuju smene i tačne pauze za svaku lokaciju, ili oznaka „Neradno“. Koristi **Izmeni smenu** ili **+ Dodaj smenu** uz lokaciju, bez vodoravnog pomeranja mreže. Na računaru ostaju dva nedeljna kalendara; klikni smenu ili **+** u zaglavlju dana. Ovo uređuje radno vreme, ne pravi rezervaciju klijenta.
 3. **Uobičajena nedelja:** izmeni podrazumevane smene, pauze i razmak za buduće nacrte. Podržani su svi dani, uključujući nedelju. Šablon ima jednu smenu po lokaciji i danu; više konkretnih smena dodaje se u kalendaru nedelje.
 
 ## Ručni klijent, pomeranje i otkazivanje
@@ -20,8 +20,8 @@ Od koraka 3 i forma za novi ručni unos bira više usluga. Označi jednu ili vi�
 
 Od 25.11.2026. za novo zakazivanje dostupne su četiri standardne usluge. Tri premium usluge su privremeno povučene, a ranije potvrđeni premium termini ostaju u pregledu sa sačuvanim nazivom i trajanjem. Mogu se pomerati i redovno otkazivati po istim pravilima. Povlačenje usluge ne otkazuje postojeći termin.
 
-- **Dodaj ručni termin:** dovoljno je ime osobe; telefon je opcion. Izaberi lokaciju, jednu ili više usluga, datum i ponuđeni slobodni termin. Proveri zbir i početak–kraj, pa potvrdi. Bez usluge potvrda nije moguća. Promena izbora ponovo proverava slobodna vremena. Gostu se ne otvara nalog i nema obaveštenje u aplikaciji. Bez telefona nema kontakta za poziv.
-- **Izmeni termin:** na kartici promeni datum, lokaciju i slobodno vreme. Moguće je pomeranje na sledeći ili drugi dozvoljeni dan. Ime osobe i kontakt gosta mogu se izmeniti; povezani korisnik koristi trenutni telefon iz profila. Sačuvana usluga i trajanje ostaju isti. Za promenu usluge koristi otkazivanje i novi unos.
+- **Dodaj ručni termin:** dovoljno je ime osobe; telefon je opcion. Nova rezervacija trenutno nudi samo **Neuzin**. Dostupnost Zrenjanina u istorijskom filteru ne otvara novo zakazivanje tamo. Izaberi jednu ili više usluga, datum i ponuđeni slobodni termin. Proveri zbir i početak–kraj, pa potvrdi. Bez usluge potvrda nije moguća. Promena izbora ponovo proverava slobodna vremena. Gostu se ne otvara nalog i nema obaveštenje u aplikaciji. Bez telefona nema kontakta za poziv.
+- **Izmeni termin:** forma prvo pokazuje prethodni datum, ceo interval, lokaciju i sve sačuvane usluge sa zbirom. Promeni datum i izaberi novi ponuđeni početak–kraj; pomera se ceo dolazak sa prvobitnim trajanjem. Ime osobe i kontakt gosta mogu se izmeniti; povezani korisnik koristi trenutni telefon iz profila. Sastav usluga se ovde ne uređuje. Za njegovu promenu koristi otkazivanje i novi unos. Nova lokacija mora biti otvorena za zakazivanje; prikaz prvobitne lokacije postojećeg termina ne menja to pravilo.
 - Neuspešno pomeranje čuva prethodni termin. Ako se izabrani termin u međuvremenu zauzme, osveži slobodne termine i izaberi drugi.
 - **Otkaži termin:** potvrdi prikazanu radnju. Odustajanje u potvrdi ne menja rezervaciju. Za redovnu izmenu i otkazivanje mora ostati najmanje 30 minuta do starog početka. Novi početak mora biti najmanje 15 minuta u budućnosti, unutar objavljenog rada i horizonta do danas + 14 dana uključivo.
 - Povezani korisnik dobija trajnu promenu/otkazivanje u aplikaciji kada je otvori. Nema booking mejlova, SMS-a, push poruka ili podsetnika. Ručni gost nema tu dostavu.
@@ -29,9 +29,16 @@ Od 25.11.2026. za novo zakazivanje dostupne su četiri standardne usluge. Tri pr
 
 ## Smene, pauze, slobodni i neradni dani
 
-Izaberi nedelju u **Radno vreme**. Ako još ne postoji, „Pripremi nedelju“ pravi nacrt iz trenutno sačuvane uobičajene nedelje. Za rad nedeljom pritisni **+** u koloni „Ned“, izaberi radno vreme i po potrebi pauze. Za neradan dan ukloni sve njegove smene na obe lokacije. Prazan dan predstavlja neradan dan ili odsustvo.
+Izaberi nedelju u **Radno vreme**. Ako još ne postoji, „Pripremi nedelju“ pravi nacrt iz trenutno sačuvane uobičajene nedelje. Za rad nedeljom na telefonu izaberi **Nedelju** i pritisni **+ Dodaj smenu** uz lokaciju; na računaru pritisni **+** u koloni „Ned“. Unesi radno vreme i po potrebi pauze. Dan može imati više smena. Za neradan dan ukloni sve njegove smene na obe lokacije. Prazan dan predstavlja neradan dan ili odsustvo.
 
-**Sačuvaj nacrt** čuva izmenu obe lokacije; korisnicima i dalje važi prethodno objavljen raspored. Tek **Objavi nedelju** otvara raspoložive termine. „Nacrt“/„Objavljeno“ služe za poređenje. Razmak između lokacija je podrazumevano 60 minuta i može se promeniti, uključujući 0, uz proveru zajedničkog frizera.
+Radnje imaju četiri različita značenja:
+
+- **Primeni u šablonu:** zatvara dijalog i primenjuje lokalnu izmenu uobičajene nedelje. Zatim posebno pritisni **Sačuvaj uobičajenu nedelju**.
+- **Primeni u nacrtu:** zatvara dijalog i primenjuje lokalnu izmenu konkretne nedelje. Još ništa nije sačuvano na serveru.
+- **Sačuvaj nacrt:** čuva smene i razmak obe lokacije. Korisnicima i dalje važi prethodno objavljen raspored.
+- **Objavi nedelju:** objavljuje prethodno sačuvan nacrt za obe lokacije. Tek objava menja dostupnost termina na lokacijama otvorenim za zakazivanje.
+
+Oznaka razlikuje **Nesačuvane izmene**, **Sačuvan nacrt ima neobjavljene izmene**, neobjavljenu nedelju i nacrt koji odgovara objavljenom rasporedu. **Nacrt**/**Objavljeno** služe za poređenje istog izabranog dana; objavljeni prikaz je samo za čitanje. Za čuvanje ili objavu vrati se na nacrt. Dok postoje nesačuvane izmene, objava je onemogućena. Razmak između lokacija je podrazumevano 60 minuta i može se promeniti, uključujući 0, uz proveru zajedničkog frizera.
 
 Ako bi objava ugrozila postojeću rezervaciju, biće odbijena bez otkazivanja i bez izmene aktivnog objavljenog rasporeda. Najpre pojedinačno pomeri ili redovno otkaži pogođenu rezervaciju, pa ponovi objavu. Nema izuzetka za kasno ili grupno otkazivanje.
 

@@ -27,8 +27,8 @@ function parseWeek(value: unknown): Week | null {
   return w as Week;
 }
 
-export function ShiftDialog({ editing, location, dayLabel, onApply, onRemove, onClose }: {
-  editing: Editing; location: string; dayLabel?: string; onApply: (shift: Shift) => void; onRemove: () => void; onClose: () => void;
+export function ShiftDialog({ editing, location, dayLabel, target, onApply, onRemove, onClose }: {
+  editing: Editing; location: string; dayLabel?: string; target: "template" | "draft"; onApply: (shift: Shift) => void; onRemove: () => void; onClose: () => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [shift, setShift] = useState(() => structuredClone(editing.shift));
@@ -72,13 +72,15 @@ export function ShiftDialog({ editing, location, dayLabel, onApply, onRemove, on
       {!shift.breaks.length && <p className="muted">Nema pauza u ovoj smeni.</p>}
       {shift.breaks.map((pause, index) => <div className="shift-break-fields" key={index}><label>Pauza {index + 1} od<input ref={index === 0 ? firstBreak : undefined} type="time" required aria-invalid={invalid === "breaks"} aria-describedby={invalid === "breaks" ? "shift-error" : undefined} value={toTime(pause.start_minute)} onChange={e => setShift({ ...shift, breaks: shift.breaks.map((b, i) => i === index ? { ...b, start_minute: fromTime(e.target.value) } : b) })} /></label><label>Pauza {index + 1} do<input type="time" required aria-invalid={invalid === "breaks"} aria-describedby={invalid === "breaks" ? "shift-error" : undefined} value={toTime(pause.end_minute % 1440)} onChange={e => setShift({ ...shift, breaks: shift.breaks.map((b, i) => i === index ? { ...b, end_minute: fromTime(e.target.value) || 1440 } : b) })} /></label><button type="button" className="calendar-icon-button" aria-label={`Ukloni pauzu ${index + 1}`} onClick={() => setShift({ ...shift, breaks: shift.breaks.filter((_, i) => i !== index) })}>×</button></div>)}
       {error && <p id="shift-error" className="form-error" role="alert">{error}</p>}
-      <div className="shift-dialog-actions">{editing.index !== null && <button type="button" className="text-button danger-text" onClick={() => { dialog.current?.close(); onRemove(); }}>Ukloni smenu</button>}<button type="button" className="text-button" onClick={close}>Odustani</button><button className="button" type="submit">Primeni u nacrtu</button></div>
+      <p className="field-help">{target === "template" ? "Primenjuješ lokalnu izmenu šablona. Zatim sačuvaj uobičajenu nedelju; postojeće nedelje se ne menjaju." : "Primenjuješ lokalnu izmenu nacrta. Zatim sačuvaj nacrt, pa objavi nedelju kada bude spremna."}</p>
+      <div className="shift-dialog-actions">{editing.index !== null && <button type="button" className="text-button danger-text" onClick={() => { dialog.current?.close(); onRemove(); }}>Ukloni smenu</button>}<button type="button" className="text-button" onClick={close}>Odustani</button><button className="button" type="submit">{target === "template" ? "Primeni u šablonu" : "Primeni u nacrtu"}</button></div>
     </form>
   </dialog>;
 }
 
 export function ScheduleEditor({ locations }: { locations: Location[] }) {
   const [monday, setMonday] = useState(() => mondayOf(localDate()));
+  const [selectedDate, setSelectedDate] = useState(localDate);
   const [week, setWeek] = useState<Week | null>(null);
   const [draft, setDraft] = useState<Shift[]>([]);
   const [gap, setGap] = useState(60);
@@ -91,6 +93,7 @@ export function ScheduleEditor({ locations }: { locations: Location[] }) {
   const [error, setError] = useState("");
   const [db] = useState(createClient);
   const dirty = !!week && (JSON.stringify(draft) !== JSON.stringify(week.draft) || gap !== week.travel_gap_minutes);
+  const unpublished = !!week && (JSON.stringify(week.draft) !== JSON.stringify(week.published) || week.travel_gap_minutes !== week.published_gap_minutes);
   useEffect(() => {
     let live = true;
     Promise.resolve(db.rpc("get_owner_schedule", { p_week: monday }).abortSignal(AbortSignal.timeout(15000))).then(({ data, error: requestError }) => {
@@ -105,7 +108,7 @@ export function ScheduleEditor({ locations }: { locations: Location[] }) {
   function changeWeek(date: string) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
     if (dirty && !window.confirm("Nacrt ima nesačuvane izmene. Pređi na drugu nedelju i odbaci ih?")) return;
-    setLoading(true); setWeek(null); setDraft([]); setView("draft"); setMessage(""); setError(""); setMonday(mondayOf(date)); setReload(n => n + 1);
+    setLoading(true); setWeek(null); setDraft([]); setView("draft"); setMessage(""); setError(""); setSelectedDate(date); setMonday(mondayOf(date)); setReload(n => n + 1);
   }
   async function prepare() {
     setBusy(true); setError(""); setMessage("");
@@ -156,26 +159,37 @@ export function ScheduleEditor({ locations }: { locations: Location[] }) {
   const endHour = Math.max(21, ...entries.map(s => Math.ceil(s.end_minute / 60)));
   const hours = Array.from({ length: endHour - startHour + 1 }, (_, i) => startHour + i);
   const range = (endHour - startHour) * 60;
+  const daySchedule = <section className="schedule-day" aria-label="Dnevni raspored">
+    <label className="booking-field">Izabrani dan<select value={selectedDate} disabled={busy} onChange={event => setSelectedDate(event.target.value)}>{labels.map((label, day) => { const date = addDays(monday, day); return <option key={date} value={date}>{label} · {dateLabel(date)}</option>; })}</select></label>
+    <div className="schedule-day-heading" aria-live="polite" aria-atomic="true"><h2>{labels[(new Date(`${selectedDate}T12:00:00Z`).getUTCDay() + 6) % 7]} · {dateLabel(selectedDate)}</h2><p>{view === "draft" ? "Nacrt" : "Objavljeno"} · Vreme u Srbiji · 24h</p></div>
+    {locations.map(location => {
+      const shifts = entries.map((shift, index) => ({ shift, index })).filter(({ shift }) => shift.date === selectedDate && shift.location_id === location.id).sort((a, b) => a.shift.start_minute - b.shift.start_minute);
+      return <section key={location.id} className="schedule-day-location" aria-label={`Smene — ${location.name}`}><div className="schedule-day-location-heading"><h3>{location.name}</h3>{view === "draft" && <button type="button" className="outline-link" disabled={busy || draft.length >= 28} onClick={() => addShift(selectedDate, location)} aria-label={`Dodaj smenu — ${location.name}, izabrani dan`}>+ Dodaj smenu</button>}</div>
+        {!shifts.length && <p className="muted">Neradno · nema smena za ovaj dan.</p>}
+        {shifts.map(({ shift, index }) => <article className="schedule-day-shift" key={index}><p><strong>{toTime(shift.start_minute)}–{toTime(shift.end_minute)}</strong> · Radno vreme</p>{shift.breaks.length ? <ul aria-label="Pauze u smeni">{shift.breaks.map((pause, i) => <li key={i}>Pauza {toTime(pause.start_minute)}–{toTime(pause.end_minute)}</li>)}</ul> : <p className="field-help">Bez pauza.</p>}{view === "draft" && <button type="button" className="outline-link" disabled={busy} onClick={() => setEditing({ index, shift })} aria-label={`Izmeni smenu — ${location.name}, ${toTime(shift.start_minute)}–${toTime(shift.end_minute)}`}>Izmeni smenu</button>}</article>)}
+      </section>;
+    })}
+  </section>;
   return <>
     <p className="eyebrow">ADMINISTRACIJA · RASPORED RADA</p><h1>Dve lokacije.<br /><em>Jedan raspored.</em></h1><p className="muted">Pripremi smene u kalendaru svake lokacije. Termini se otvaraju tek kada objaviš nedelju.</p>
-    <p className="field-help">Ovde dodaješ radno vreme, ne rezervaciju klijenta. Za rad nedeljom dodaj smenu dugmetom + u koloni Ned. Dan bez smene je neradan; za potpuno neradan dan ukloni sve njegove smene na obe lokacije.</p>
+    <p className="field-help">Ovde dodaješ radno vreme, ne rezervaciju klijenta. Za rad nedeljom izaberi Nedelju i dodaj smenu. Dan bez smene je neradan; za potpuno neradan dan ukloni sve njegove smene na obe lokacije.</p>
     <p><Link className="outline-link" href="/administrator/sablon">Izmeni uobičajenu nedelju za buduće nacrte</Link></p>
     <div className="schedule-toolbar"><div className="schedule-week-nav"><button type="button" className="calendar-icon-button" aria-label="Prethodna nedelja" disabled={busy || loading} onClick={() => changeWeek(addDays(monday, -7))}>←</button><label className="schedule-date-label"><span>{dateLabel(monday)} — {dateLabel(addDays(monday, 6))}</span><input aria-label="Izaberi nedelju" type="date" value={monday} disabled={busy || loading} onChange={e => changeWeek(e.target.value)} /></label><button type="button" className="calendar-icon-button" aria-label="Sledeća nedelja" disabled={busy || loading} onClick={() => changeWeek(addDays(monday, 7))}>→</button></div><button type="button" className="text-button" disabled={busy || loading} onClick={() => changeWeek(localDate())}>Ova nedelja</button></div>
     {error && <div className="form-error" role="alert">{error}{!week && <button className="text-button" type="button" onClick={() => { setLoading(true); setError(""); setReload(n => n + 1); }}>Pokušaj ponovo</button>}</div>}{message && <p className="form-success" role="status">{message}</p>}
     {loading ? <p className="page-loading" role="status">Učitavamo kalendare…</p> : !week ? !error && <div className="empty-state"><h2>Nedelja još nije pripremljena.</h2><p>Pripremi kalendare za Zrenjanin i Neuzin iz početnog šablona. Nedelja ostaje zatvorena dok je ne objaviš.</p><button className="button" disabled={busy} onClick={prepare}>Pripremi nedelju</button></div> : <>
-      <div className="schedule-meta"><div className="schedule-view" aria-label="Verzija rasporeda"><button type="button" aria-pressed={view === "draft"} onClick={() => setView("draft")}>Nacrt <span>v{week.draft_revision}</span></button><button type="button" aria-pressed={view === "published"} onClick={() => setView("published")}>Objavljeno <span>{week.published ? `v${week.published_revision}` : "—"}</span></button></div><span className={`schedule-badge${dirty ? " is-dirty" : ""}`}>{dirty ? "Nesačuvane izmene" : week.published ? "Objavljena verzija je aktivna" : "Nedelja još nije objavljena"}</span></div>
+      <div className="schedule-meta"><div className="schedule-view" aria-label="Verzija rasporeda"><button type="button" aria-pressed={view === "draft"} onClick={() => setView("draft")}>Nacrt <span>v{week.draft_revision}</span></button><button type="button" aria-pressed={view === "published"} onClick={() => setView("published")}>Objavljeno <span>{week.published ? `v${week.published_revision}` : "—"}</span></button></div><span role="status" className={`schedule-badge${dirty || unpublished ? " is-dirty" : ""}`}>{view === "published" ? week.published ? "Prikazan je aktivni objavljeni raspored" : "Nedelja još nije objavljena" : dirty ? "Nesačuvane izmene" : !week.published ? "Sačuvan nacrt · nedelja još nije objavljena" : unpublished ? "Sačuvan nacrt ima neobjavljene izmene" : "Nacrt odgovara objavljenom rasporedu"}</span></div>
       <div className="schedule-controls"><label>Razmak između lokacija (min)<input type="number" min="0" step="1" disabled={busy || view === "published"} value={view === "published" ? week.published_gap_minutes ?? gap : gap} onChange={e => setGap(Number(e.target.value))} /></label><p className="field-help">Jedan frizer radi na obe lokacije. Smene se ne smeju preklapati.</p></div>
-      {view === "published" && !week.published ? <div className="empty-state"><h2>Raspored još nije objavljen.</h2><p>Vrati se na nacrt, sačuvaj izmene i objavi nedelju.</p></div> : <div className="location-calendars">{locations.map((location, locationIndex) => <section key={location.id} className={`location-calendar location-calendar-${locationIndex}`} aria-labelledby={`calendar-${location.id}`}>
+      {view === "published" && !week.published ? <div className="empty-state"><h2>Raspored još nije objavljen.</h2><p>Vrati se na nacrt, sačuvaj izmene i objavi nedelju.</p></div> : <>{daySchedule}<div className="location-calendars">{locations.map((location, locationIndex) => <section key={location.id} className={`location-calendar location-calendar-${locationIndex}`} aria-labelledby={`calendar-${location.id}`}>
         <div className="calendar-heading"><div><p className="eyebrow">LOKACIJA {pad(locationIndex + 1)}</p><h2 id={`calendar-${location.id}`}>{location.name}</h2></div><p>{view === "draft" ? "Nacrt nedelje" : "Objavljeni raspored"}<span>Vreme u Srbiji · 24h</span></p></div>
-        <p className="calendar-help">{view === "draft" ? "Izaberi smenu za izmenu ili + za novu smenu." : "Ovo je raspored koji određuje dostupnost termina."}<span> Na telefonu prevuci kalendar ulevo ili udesno.</span></p>
+        <p className="calendar-help">{view === "draft" ? "Izaberi smenu za izmenu ili + za novu smenu." : "Ovo je raspored koji određuje dostupnost termina."}</p>
         <div className="calendar-scroll" tabIndex={0} role="region" aria-label={`Nedeljni kalendar — ${location.name}`}><div className="calendar-grid">
           <div className="calendar-corner">SATI</div>{labels.map((label, day) => { const date = addDays(monday, day); return <div className={`calendar-day-label${date === localDate() ? " is-today" : ""}`} key={date}><span><abbr title={label}>{shortLabels[day]}</abbr><strong>{Number(date.slice(8))}.{Number(date.slice(5, 7))}.</strong></span>{view === "draft" && <button type="button" aria-label={`Dodaj smenu — ${location.name}, ${label}`} disabled={busy || draft.length >= 28} onClick={() => addShift(date, location)}>+</button>}</div>; })}
           <div className="calendar-hours" style={{ height: (endHour - startHour) * 44 }}>{hours.map(hour => <span key={hour} style={{ top: (hour - startHour) * 44 }}>{pad(hour)}:00</span>)}</div>
           {labels.map((label, day) => { const date = addDays(monday, day); const shifts = entries.map((shift, index) => ({ shift, index })).filter(({ shift }) => shift.date === date && shift.location_id === location.id); return <div className={`calendar-day-column${date === localDate() ? " is-today" : ""}`} style={{ height: (endHour - startHour) * 44 }} key={date}>{!shifts.length && <span className="calendar-closed">Neradno</span>}{shifts.map(({ shift, index }) => <button type="button" className="calendar-shift" key={index} style={{ top: `${(shift.start_minute - startHour * 60) / range * 100}%`, height: `${(shift.end_minute - shift.start_minute) / range * 100}%` }} disabled={busy || view === "published"} aria-label={`${location.name}, ${label} ${toTime(shift.start_minute)}–${toTime(shift.end_minute)}, ${shift.breaks.length} pauza. Izmeni smenu`} onClick={() => setEditing({ index, shift })}><span className="calendar-shift-time">{toTime(shift.start_minute)}<br />— {toTime(shift.end_minute)}</span><span className="calendar-shift-label">Radno vreme</span>{shift.breaks.map((pause, i) => <span className="calendar-break" key={i} style={{ top: `${(pause.start_minute - shift.start_minute) / (shift.end_minute - shift.start_minute) * 100}%`, height: `${(pause.end_minute - pause.start_minute) / (shift.end_minute - shift.start_minute) * 100}%` }} title={`Pauza ${toTime(pause.start_minute)}–${toTime(pause.end_minute)}`}><span>Pauza {toTime(pause.start_minute)}–{toTime(pause.end_minute)}</span></span>)}</button>)}</div>; })}
         </div></div>
-      </section>)}</div>}
-      <div className="schedule-actions"><p>{dirty ? "Sačuvaj izmene pre objavljivanja." : "Objava važi za obe lokacije izabrane nedelje."}</p><button type="button" className="button schedule-save" disabled={busy || !dirty} onClick={save}>{busy ? "Obrađujemo…" : "Sačuvaj nacrt"}</button><button type="button" className="button" disabled={busy || dirty} onClick={publish}>Objavi nedelju</button></div>
+      </section>)}</div></>}
+      <div className="schedule-actions"><p>{view === "published" ? "Za izmene i objavu vrati se na nacrt." : dirty ? "Sačuvaj izmene pre objavljivanja." : "Sačuvan nacrt ne menja dostupnost. Objava važi za obe lokacije izabrane nedelje."}</p><button type="button" className="button schedule-save" disabled={busy || !dirty || view === "published"} onClick={save}>{busy ? "Obrađujemo…" : "Sačuvaj nacrt"}</button><button type="button" className="button" disabled={busy || dirty || view === "published"} onClick={publish}>Objavi nedelju</button></div>
     </>}
-    {editing && <ShiftDialog editing={editing} location={locations.find(l => l.id === editing.shift.location_id)?.name ?? ""} onClose={() => setEditing(null)} onRemove={() => { setDraft(old => old.filter((_, i) => i !== editing.index)); setEditing(null); }} onApply={shift => { setDraft(old => editing.index === null ? [...old, shift] : old.map((s, i) => i === editing.index ? shift : s)); setEditing(null); setMessage(""); }} />}
+    {editing && <ShiftDialog target="draft" editing={editing} location={locations.find(l => l.id === editing.shift.location_id)?.name ?? ""} onClose={() => setEditing(null)} onRemove={() => { setDraft(old => old.filter((_, i) => i !== editing.index)); setEditing(null); }} onApply={shift => { setDraft(old => editing.index === null ? [...old, shift] : old.map((s, i) => i === editing.index ? shift : s)); setEditing(null); setMessage(""); }} />}
   </>;
 }

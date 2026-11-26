@@ -43,7 +43,7 @@ for (const [kind, contact] of [["phone", "064 123 4567"], ["email", "guest-ui@ex
     await expect(page).toHaveURL(/\/profil\?/);
     await page.getByLabel("Ime", { exact: true }).fill("Test");
     await page.getByLabel("Prezime", { exact: true }).fill("Gost");
-    await page.getByRole("button", { name: "Sačuvaj podatke" }).click();
+    await page.getByRole("button", { name: "Sačuvaj i nastavi" }).click();
     await expect(page).toHaveURL(/\/moji-termini$/);
     await page.reload();
     await expect(page.getByRole("link", { name: "Moj profil" })).toBeVisible();

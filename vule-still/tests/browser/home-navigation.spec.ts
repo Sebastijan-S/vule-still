@@ -156,7 +156,7 @@ for (const width of [390, 1280]) test(`signed-in account navigation and appointm
   if (width === 390) await expect(page.locator(".navigation-toggle")).toHaveAttribute("aria-expanded", "false");
   await nav.getByRole("link", { name: "Moji termini", exact: true }).click();
   await expect(page).toHaveURL(/\/moji-termini$/);
-  await expect(page.getByRole("heading", { name: "Budući termini", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Naredni dolazak", exact: true })).toBeVisible();
   if (width === 390) await page.locator(".navigation-toggle").click();
   await nav.getByRole("button", { name: "Odjavi se", exact: true }).click();
   await page.goto("/");
